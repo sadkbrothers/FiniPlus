@@ -1,0 +1,2377 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<!-- ══ PWA CORE ══ -->
+<meta name="theme-color" content="#0B1A2E">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+
+<!-- ══ iOS PWA — REQUIRED for fullscreen ══ -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FINI PLUS">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icon-192.png">
+
+<!-- ══ Favicon ══ -->
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="shortcut icon" href="icon-192.png">
+
+<meta name="description" content="FINI PLUS — Devis & Factures professionnels">
+<title>FINI PLUS</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+<style>
+/* ══════════════════════════════════════
+   TOKENS
+══════════════════════════════════════ */
+:root {
+  --ink:     #0B1A2E;
+  --ink2:    #1A3050;
+  --ink3:    #2A4A70;
+  --paper:   #F6F8FD;
+  --card:    #FFFFFF;
+  --border:  #E2E8F5;
+  --border2: #C8D4EC;
+  --text:    #0B1A2E;
+  --text2:   #5A7090;
+  --text3:   #8AAABB;
+  --gold:    #C9A030;
+  --gold2:   #E8C050;
+  --blue:    #1A5A9E;
+  --teal:    #0E8A7A;
+  --rose:    #B03060;
+  --safe:    env(safe-area-inset-bottom, 0px);
+  --topbar:  60px;
+  --botbar:  64px;
+  --radius:  14px;
+  --radius-s: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body.ar { direction: rtl; font-family: 'Noto Sans Arabic', 'DM Sans', sans-serif; }
+
+/* ══════════════════════════════════════
+   INTRO — 3 seconds
+══════════════════════════════════════ */
+#intro {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--ink);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#intro.out { animation: introOut .7s ease forwards; }
+@keyframes introOut { to { opacity: 0; transform: scale(1.06); pointer-events: none; } }
+
+/* Animated grid */
+.ig {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(201,160,48,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,160,48,.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: gridMove 12s linear infinite;
+}
+@keyframes gridMove { to { background-position: 44px 44px; } }
+
+/* Sweeping lines */
+.isweep {
+  position: absolute; width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(201,160,48,.5) 50%, transparent 100%);
+}
+.isweep:nth-child(1) { top: 25%; animation: sweep 3s ease-in-out infinite 0s; }
+.isweep:nth-child(2) { top: 55%; animation: sweep 3s ease-in-out infinite .6s; }
+.isweep:nth-child(3) { top: 78%; animation: sweep 3s ease-in-out infinite 1.2s; }
+@keyframes sweep {
+  0% { transform: translateX(-100%) scaleX(.3); opacity: 0; }
+  50% { transform: translateX(0%) scaleX(1); opacity: 1; }
+  100% { transform: translateX(100%) scaleX(.3); opacity: 0; }
+}
+
+.intro-logo {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  animation: logoIn .9s cubic-bezier(.34,1.4,.64,1) .2s both;
+}
+@keyframes logoIn {
+  from { opacity: 0; transform: translateY(30px) scale(.85); }
+  to { opacity: 1; transform: none; }
+}
+
+.geo-mark {
+  width: 80px; height: 80px; position: relative;
+}
+.geo-mark svg { width: 100%; height: 100%; }
+
+.intro-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 52px; font-weight: 300;
+  color: #fff; letter-spacing: 10px;
+  text-align: center; line-height: 1;
+}
+.intro-name b { font-weight: 700; color: var(--gold2); }
+
+.intro-line {
+  display: flex; align-items: center; gap: 14px;
+  animation: logoIn .8s ease .7s both;
+}
+.il { width: 52px; height: 1px; background: rgba(201,160,48,.45); }
+.id { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); }
+
+.intro-tag {
+  font-size: 9px; letter-spacing: 3.5px; text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  animation: logoIn .8s ease .8s both;
+}
+
+/* Progress bar */
+.intro-bar {
+  position: absolute; bottom: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+  animation: barGrow 3s linear forwards;
+}
+@keyframes barGrow { from { width: 0; } to { width: 100%; } }
+
+/* Made by */
+.intro-credit {
+  position: absolute; bottom: 28px; left: 0; right: 0;
+  text-align: center;
+  animation: logoIn .8s ease 1.1s both;
+}
+.ic1 { font-size: 8px; letter-spacing: 3px; color: rgba(255,255,255,.2); text-transform: uppercase; }
+.ic2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px; font-weight: 600; letter-spacing: 5px;
+  color: rgba(201,160,48,.55); margin-top: 4px;
+}
+
+/* Corner marks */
+.icorner {
+  position: absolute; width: 36px; height: 36px; opacity: .2;
+  border-color: var(--gold); border-style: solid;
+}
+.icorner.tl { top: 20px; left: 20px; border-width: 1px 0 0 1px; }
+.icorner.tr { top: 20px; right: 20px; border-width: 1px 1px 0 0; }
+.icorner.bl { bottom: 20px; left: 20px; border-width: 0 0 1px 1px; }
+.icorner.br { bottom: 20px; right: 20px; border-width: 0 1px 1px 0; }
+
+/* ══════════════════════════════════════
+   SPLASH — COMMENCER
+══════════════════════════════════════ */
+#splash {
+  position: fixed; inset: 0; z-index: 9998;
+  background: var(--ink);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#splash.show { display: flex; }
+#splash.out { animation: introOut .6s ease forwards; }
+
+.splash-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 40%, rgba(26,90,158,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 75% 70%, rgba(201,160,48,.07) 0%, transparent 60%);
+}
+.splash-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(201,160,48,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,160,48,.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.sc { position: relative; z-index: 2; text-align: center; padding: 0 30px; }
+
+.sp-mark {
+  width: 110px; height: 110px; margin: 0 auto 22px;
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+.sp-ring {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(201,160,48,.25);
+  animation: spin 20s linear infinite;
+}
+.sp-ring2 {
+  position: absolute; inset: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,160,48,.1);
+  animation: spin 14s linear infinite reverse;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.sp-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 56px; font-weight: 300; color: #fff; letter-spacing: 10px; line-height: 1;
+}
+.sp-name b { font-weight: 700; color: var(--gold2); }
+
+.sp-divider {
+  display: flex; align-items: center; gap: 14px;
+  margin: 14px auto 10px; width: fit-content;
+}
+.sdl { width: 52px; height: 1px; background: rgba(201,160,48,.4); }
+.sdd { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); }
+.sp-sub {
+  font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,.25);
+  text-transform: uppercase; margin-bottom: 42px;
+}
+
+/* COMMENCER button */
+.btn-comm {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 16px 52px;
+  background: transparent;
+  border: 1px solid rgba(201,160,48,.5);
+  color: rgba(201,160,48,.85);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 600; letter-spacing: 5px; text-transform: uppercase;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: color .3s;
+}
+.btn-comm::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--gold); transform: scaleX(0); transform-origin: left;
+  transition: transform .35s ease;
+}
+.btn-comm:hover::before, .btn-comm:active::before { transform: scaleX(1); }
+.btn-comm:hover, .btn-comm:active { color: var(--ink); }
+.btn-comm span { position: relative; z-index: 1; }
+
+.sp-corner { position: absolute; width: 40px; height: 40px; opacity: .2; border-color: var(--gold); border-style: solid; }
+.sp-corner.tl { top: 22px; left: 22px; border-width: 1px 0 0 1px; }
+.sp-corner.tr { top: 22px; right: 22px; border-width: 1px 1px 0 0; }
+.sp-corner.bl { bottom: 22px; left: 22px; border-width: 0 0 1px 1px; }
+.sp-corner.br { bottom: 22px; right: 22px; border-width: 0 1px 1px 0; }
+
+/* ══════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════ */
+#app {
+  display: none; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  overflow: hidden;
+}
+#app.show { display: flex; }
+
+/* ── TOPBAR ── */
+.topbar {
+  height: var(--topbar);
+  background: var(--ink);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top, 0px);
+  flex-shrink: 0;
+  position: relative;
+}
+.topbar::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,160,48,.3), transparent);
+}
+.tb-logo {
+  display: flex; align-items: center; gap: 9px;
+}
+.tb-logo svg { flex-shrink: 0; }
+.tb-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 600; color: #fff; letter-spacing: 2px; line-height: 1;
+}
+.tb-name em { color: var(--gold2); font-style: normal; }
+.tb-right { display: flex; gap: 6px; align-items: center; }
+
+/* ── CONTENT AREA ── */
+.content-area {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 calc(var(--botbar) + var(--safe) + 12px);
+}
+.page { display: none; padding: 14px; }
+.page.active { display: block; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding-bottom: var(--safe);
+  height: calc(var(--botbar) + var(--safe));
+  flex-shrink: 0;
+  position: relative; z-index: 100;
+  box-shadow: 0 -4px 20px rgba(11,26,46,.08);
+}
+.bn-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px;
+  cursor: pointer; padding: 8px 4px; color: var(--text2);
+  transition: color .2s; position: relative;
+  border: none; background: transparent; font-family: inherit;
+}
+.bn-item.active { color: var(--ink); }
+.bn-item.active::before {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+  border-radius: 0 0 3px 3px;
+}
+.bn-icon { font-size: 20px; line-height: 1; }
+.bn-label { font-size: 9px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; }
+
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+.stats-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+}
+.stat-tile {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+  position: relative; overflow: hidden;
+}
+.stat-tile::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.st-blue::before { background: linear-gradient(90deg, var(--blue), #5090D0); }
+.st-teal::before { background: linear-gradient(90deg, var(--teal), #30B090); }
+.st-gold::before { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+.st-rose::before { background: linear-gradient(90deg, var(--rose), #D06090); }
+.stat-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text2); margin-bottom: 5px; }
+.stat-val { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--ink); line-height: 1; }
+.stat-val.small { font-size: 16px; margin-top: 3px; }
+
+/* Quick actions */
+.qa-strip {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.qa-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 13px; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; cursor: pointer; border: none;
+  font-family: inherit; transition: all .2s;
+}
+.qa-primary {
+  background: var(--ink); color: #fff;
+  box-shadow: 0 4px 14px rgba(11,26,46,.2);
+}
+.qa-primary:active { transform: scale(.97); }
+.qa-secondary {
+  background: var(--card); color: var(--ink);
+  border: 1.5px solid var(--border2);
+}
+.qa-secondary:active { transform: scale(.97); }
+
+/* Recent section */
+.sec-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; margin-top: 16px;
+}
+.sec-ht {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 600; color: var(--ink);
+}
+.sec-all {
+  font-size: 11px; color: var(--blue); font-weight: 600; cursor: pointer;
+  background: none; border: none; font-family: inherit;
+}
+
+/* ══════════════════════════════════════
+   DOC CARDS (main record style)
+══════════════════════════════════════ */
+.doc-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+  margin-bottom: 10px;
+  animation: cardIn .25s ease both;
+  position: relative; overflow: hidden;
+}
+.doc-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.dc-devis::before { background: var(--blue); }
+.dc-facture::before { background: var(--teal); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.dc-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.dc-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+}
+.dc-date { font-size: 11px; color: var(--text2); }
+.dc-client { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.dc-mid {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.dc-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 600; color: var(--ink);
+}
+.dc-amount small { font-size: 11px; color: var(--text2); font-family: 'DM Sans', sans-serif; }
+
+/* Action buttons row - ALWAYS VISIBLE */
+.dc-actions {
+  display: flex; gap: 6px; margin-top: 12px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.dca-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 8px 6px;
+  border-radius: var(--radius-s);
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit;
+  transition: all .15s;
+}
+.dca-btn:active { transform: scale(.95); }
+.dca-pdf {
+  background: #EFF3FF; color: var(--blue);
+  border: 1px solid #C8D8F8;
+}
+.dca-pdf:active { background: #D8E4FF; }
+.dca-wa {
+  background: #E8F8EF; color: #1A7A40;
+  border: 1px solid #B0DFC0;
+}
+.dca-wa:active { background: #D0F0DC; }
+.dca-view {
+  background: var(--paper); color: var(--text2);
+  border: 1px solid var(--border);
+}
+.dca-view:active { background: var(--border); }
+.dca-del {
+  background: #FEF0F0; color: #A02020;
+  border: 1px solid #F0C0C0;
+  flex: 0; padding: 8px 10px;
+}
+.dca-del:active { background: #FDD0D0; }
+
+/* ══════════════════════════════════════
+   BADGES
+══════════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: .2px;
+}
+.b-pending { background: #FEF5DC; color: #906010; }
+.b-paid { background: #E0F5E8; color: #1A7A40; }
+.b-cancelled { background: #FDECEA; color: #9A2020; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 50px 20px;
+  color: var(--text2);
+}
+.empty-icon {
+  font-size: 46px; margin-bottom: 10px; opacity: .3;
+  font-family: 'Cormorant Garamond', serif;
+}
+.empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.empty-sub { font-size: 13px; opacity: .7; }
+
+/* ══════════════════════════════════════
+   MODALS
+══════════════════════════════════════ */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(11,26,46,.7); z-index: 2000;
+  align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.overlay.open { display: flex; }
+
+/* Bottom sheet style on mobile */
+.modal {
+  background: var(--card);
+  border-radius: 18px 18px 0 0;
+  width: 100%; max-width: 640px; max-height: 94dvh;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  animation: sheetUp .28s cubic-bezier(.34,1.1,.64,1);
+  border-top: 2px solid var(--gold);
+}
+@keyframes sheetUp { from { transform: translateY(100%); } }
+
+/* Desktop: centered */
+@media (min-width: 640px) {
+  .overlay { align-items: center; }
+  .modal { border-radius: 18px; max-height: 90vh; }
+}
+
+.modal-handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: var(--border2); margin: 10px auto 0;
+}
+.mhead {
+  padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); z-index: 5;
+}
+.mhead h2 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--ink); }
+.mclose { background: var(--paper); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
+.mbody { padding: 16px 18px; }
+.mfoot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; position: sticky; bottom: 0; background: var(--card); }
+
+/* FORM */
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fg { display: flex; flex-direction: column; gap: 4px; }
+.fg.full { grid-column: 1 / -1; }
+.flabel { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text2); }
+input, select, textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-s);
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  color: var(--text); background: var(--paper);
+  outline: none; transition: border-color .2s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--blue); background: #fff; }
+textarea { resize: vertical; min-height: 56px; }
+hr.div { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+/* ITEMS TABLE */
+.itbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -18px; padding: 0 18px; }
+.itbl { width: 100%; border-collapse: collapse; min-width: 480px; }
+.itbl th { background: var(--ink); color: rgba(255,255,255,.65); padding: 8px 8px; text-align: left; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.itbl td { padding: 4px 4px; vertical-align: middle; border-bottom: 1px solid var(--border); }
+.itbl td input, .itbl td select { padding: 7px 7px; font-size: 12px; background: #fff; }
+
+/* TOTAL BOX */
+.totbox { background: var(--ink); border-radius: 10px; padding: 14px; margin-top: 10px; }
+.tr-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; color: rgba(255,255,255,.55); }
+.tr-row.main { font-size: 17px; font-weight: 700; color: var(--gold2); border-top: 1px solid rgba(255,255,255,.1); margin-top: 8px; padding-top: 10px; }
+
+/* ══════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════ */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: var(--radius-s); font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all .2s; }
+.btn-ink { background: var(--ink); color: #fff; box-shadow: 0 4px 14px rgba(11,26,46,.25); }
+.btn-ink:active { transform: scale(.97); }
+.btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: var(--ink); }
+.btn-ghost { background: var(--card); color: var(--text); border: 1.5px solid var(--border); }
+.btn-ghost:active { background: var(--paper); }
+.btn-sm { padding: 7px 13px; font-size: 11px; }
+.btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
+
+/* ══════════════════════════════════════
+   INSTALL BANNER
+══════════════════════════════════════ */
+#install-bar {
+  display: none;
+  background: linear-gradient(135deg, var(--ink2), var(--ink3));
+  padding: 10px 14px;
+  align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(201,160,48,.2);
+  position: relative;
+}
+#install-bar.show { display: flex; }
+#install-bar .ib-text { flex: 1; font-size: 12px; color: rgba(255,255,255,.8); }
+#install-bar .ib-text strong { color: var(--gold2); display: block; font-size: 11px; }
+.ib-btn {
+  padding: 7px 14px; background: var(--gold); color: var(--ink);
+  border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: inherit; white-space: nowrap;
+}
+.ib-close { background: none; border: none; color: rgba(255,255,255,.4); cursor: pointer; font-size: 18px; padding: 0 4px; }
+
+/* iOS install guide */
+#ios-bar {
+  display: none;
+  background: linear-gradient(135deg, #0E3060, #1A5A3A);
+  padding: 10px 14px;
+  align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(201,160,48,.2);
+}
+#ios-bar.show { display: flex; }
+#ios-bar .ib-text { flex: 1; font-size: 11px; color: rgba(255,255,255,.8); }
+#ios-bar .ib-text strong { color: var(--gold2); display: block; font-size: 11px; margin-bottom: 2px; }
+
+/* ══════════════════════════════════════
+   PDF PROGRESS
+══════════════════════════════════════ */
+#pdf-overlay {
+  display: none; position: fixed; inset: 0; z-index: 9000;
+  background: rgba(11,26,46,.75); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+#pdf-overlay.show { display: flex; }
+.pdf-box {
+  background: var(--card); border-radius: 16px;
+  padding: 28px; width: 280px; text-align: center;
+  border-top: 2px solid var(--gold);
+}
+.pdf-box .pb-icon { font-size: 40px; margin-bottom: 12px; }
+.pdf-box .pb-msg { font-size: 14px; color: var(--text2); margin-bottom: 14px; }
+.pdf-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.pdf-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--gold)); border-radius: 2px; transition: width .3s; width: 0%; }
+
+/* ══════════════════════════════════════
+   PREVIEW
+══════════════════════════════════════ */
+#preview-overlay {
+  display: none; position: fixed; inset: 0; z-index: 3000;
+  background: rgba(11,26,46,.8); backdrop-filter: blur(5px);
+  flex-direction: column;
+}
+#preview-overlay.open { display: flex; }
+.prev-topbar {
+  background: var(--ink); padding: 10px 14px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  border-bottom: 1px solid rgba(201,160,48,.2);
+  flex-shrink: 0;
+}
+.prev-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #eee; padding: 16px; }
+#preview-doc { background: #fff; max-width: 720px; margin: 0 auto; }
+
+/* ══════════════════════════════════════
+   SETTINGS PAGE
+══════════════════════════════════════ */
+.cfg-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+}
+.cfg-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 14px;
+}
+
+/* ══════════════════════════════════════
+   PRODUCTS PAGE
+══════════════════════════════════════ */
+.prod-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+}
+.prod-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+.prod-info { flex: 1; min-width: 0; }
+.prod-name { font-weight: 600; font-size: 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prod-desc { font-size: 11px; color: var(--text2); }
+.prod-price { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--ink); flex-shrink: 0; }
+.prod-acts { display: flex; gap: 4px; flex-shrink: 0; }
+
+/* TOAST */
+#toast {
+  position: fixed; bottom: calc(var(--botbar) + var(--safe) + 10px); left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: #fff;
+  padding: 10px 18px; border-radius: 10px;
+  font-size: 13px; border-left: 3px solid var(--gold);
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: all .3s; z-index: 99999;
+  box-shadow: 0 8px 24px rgba(11,26,46,.3);
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════
+   CALCULATOR PAGE
+══════════════════════════════════════ */
+.calc-tabs {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: var(--border); border-radius: var(--radius); padding: 3px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.calc-tab {
+  flex: 1; min-width: 80px; padding: 9px 8px; border: none; border-radius: 10px;
+  font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  background: transparent; color: var(--text2); font-family: inherit;
+  transition: all .2s; text-align: center; line-height: 1.3;
+}
+.calc-tab.active {
+  background: var(--card); color: var(--ink);
+  box-shadow: 0 1px 6px rgba(11,26,46,.12);
+}
+.calc-panel { display: none; }
+.calc-panel.active { display: block; }
+
+/* Dimension input card */
+.dim-card {
+  background: var(--ink); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 14px; position: relative; overflow: hidden;
+}
+.dim-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+}
+.dim-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 600; color: #fff; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dim-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.dim-field { display: flex; flex-direction: column; gap: 5px; }
+.dim-label { font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; color: rgba(255,255,255,.4); }
+.dim-input {
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px; padding: 11px 12px;
+  color: #fff; font-size: 18px; font-weight: 600;
+  font-family: 'Cormorant Garamond', serif;
+  outline: none; transition: border-color .2s; text-align: center;
+  -webkit-appearance: none;
+}
+.dim-input:focus { border-color: rgba(201,160,48,.7); }
+.dim-input::placeholder { color: rgba(255,255,255,.2); font-size: 14px; }
+.dim-unit { font-size: 10px; color: rgba(255,255,255,.3); text-align: center; margin-top: 3px; }
+
+/* Surface display */
+.surface-badge {
+  margin-top: 14px; background: rgba(201,160,48,.12);
+  border: 1px solid rgba(201,160,48,.3); border-radius: 8px;
+  padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+}
+.sb-label { font-size: 10px; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .8px; }
+.sb-value { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--gold2); }
+
+/* Options */
+.opts-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 14px;
+}
+.opts-title { font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; color: var(--text2); margin-bottom: 12px; }
+.opt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.opt-row:last-child { border-bottom: none; padding-bottom: 0; }
+.opt-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.opt-sub { font-size: 11px; color: var(--text2); }
+.toggle-wrap { display: flex; align-items: center; }
+input[type=checkbox].toggle { display: none; }
+.toggle-btn {
+  width: 44px; height: 26px; background: var(--border);
+  border-radius: 13px; position: relative; cursor: pointer;
+  transition: background .2s;
+}
+.toggle-btn::after {
+  content: ''; position: absolute; left: 3px; top: 3px;
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  transition: left .2s; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+input[type=checkbox].toggle:checked + .toggle-btn { background: var(--blue); }
+input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
+
+/* Calc button */
+.calc-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--blue), #1E6AC0);
+  color: #fff; border: none; border-radius: var(--radius);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: inherit; letter-spacing: .5px; margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(26,90,158,.3); transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.calc-btn:active { transform: scale(.98); }
+
+/* Results */
+.results-card {
+  display: none; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 14px;
+  animation: cardIn .3s ease;
+}
+.results-card.show { display: block; }
+.res-header {
+  background: var(--ink); padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.res-ht { font-family: 'Cormorant Garamond', serif; font-size: 18px;
+  font-weight: 600; color: #fff; }
+.res-surface { font-size: 11px; color: rgba(255,255,255,.4); }
+
+.mat-row {
+  display: flex; align-items: center; padding: 12px 16px;
+  border-bottom: 1px solid var(--border); gap: 12px;
+}
+.mat-row:last-child { border-bottom: none; }
+.mat-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.mat-info { flex: 1; min-width: 0; }
+.mat-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.mat-detail { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.mat-qty {
+  text-align: right; flex-shrink: 0;
+}
+.mat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1;
+}
+.mat-unit { font-size: 10px; color: var(--text2); font-weight: 600; }
+
+/* Waste warning */
+.waste-note {
+  background: #FEF9E8; border: 1px solid #F0D870; border-radius: 8px;
+  padding: 10px 14px; margin: 0 16px 14px;
+  font-size: 11px; color: #806010; line-height: 1.6;
+}
+
+/* Quick calc button in dashboard */
+.qa-calc {
+  background: linear-gradient(135deg, rgba(201,160,48,.15), rgba(201,160,48,.08));
+  color: var(--gold); border: 1.5px solid rgba(201,160,48,.35);
+}
+.qa-calc:active { transform: scale(.97); }
+
+/* Color coding icons */
+.ic-armstrong { background: #EFF6FF; }
+.ic-ba13      { background: #F0FBF4; }
+.ic-cloison   { background: #FFF8EE; }
+.ic-perim     { background: #F5F0FF; }
+.ic-fixation  { background: #FFF0F0; }
+.ic-finition  { background: #F5FBFF; }
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════ INTRO SCREEN ══════════════ -->
+<div id="intro" style="cursor:pointer" title="Cliquer pour passer">
+  <div class="ig"></div>
+  <div class="isweep"></div>
+  <div class="isweep"></div>
+  <div class="isweep"></div>
+  <div class="icorner tl"></div>
+  <div class="icorner tr"></div>
+  <div class="icorner bl"></div>
+  <div class="icorner br"></div>
+
+  <div class="intro-logo">
+    <div class="geo-mark">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="28" height="28" stroke="#C9A030" stroke-width="2.5" fill="none"/>
+        <rect x="28" y="28" width="28" height="28" stroke="#C9A030" stroke-width="2.5" fill="none"/>
+        <rect x="18" y="18" width="28" height="28" stroke="rgba(201,160,48,.35)" stroke-width="1.5" fill="none"/>
+        <line x1="8" y1="8" x2="28" y2="28" stroke="#C9A030" stroke-width="2"/>
+        <line x1="36" y1="8" x2="56" y2="28" stroke="#C9A030" stroke-width="2"/>
+        <line x1="8" y1="36" x2="28" y2="56" stroke="#C9A030" stroke-width="2"/>
+        <rect x="37" y="37" width="6" height="6" fill="rgba(201,160,48,.6)" transform="rotate(45 40 40)"/>
+      </svg>
+    </div>
+    <div class="intro-name">FINI <b>PLUS</b></div>
+    <div class="intro-line"><div class="il"></div><div class="id"></div><div class="il"></div></div>
+    <div class="intro-tag">Excellence en Finition</div>
+  </div>
+  <div class="intro-bar"></div>
+  <div class="intro-credit">
+    <div class="ic1">Made by :</div>
+    <div class="ic2">MOHAMED SADK</div>
+  </div>
+</div>
+
+<!-- ══════════════ SPLASH ══════════════ -->
+<div id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-grid"></div>
+  <div class="sp-corner tl"></div>
+  <div class="sp-corner tr"></div>
+  <div class="sp-corner bl"></div>
+  <div class="sp-corner br"></div>
+  <div class="sc">
+    <div class="sp-mark">
+      <div class="sp-ring"></div>
+      <div class="sp-ring2"></div>
+      <svg width="52" height="52" viewBox="0 0 80 80" fill="none">
+        <rect x="8" y="8" width="28" height="28" stroke="#C9A030" stroke-width="2.5" fill="none"/>
+        <rect x="28" y="28" width="28" height="28" stroke="#C9A030" stroke-width="2.5" fill="none"/>
+        <rect x="18" y="18" width="28" height="28" stroke="rgba(201,160,48,.35)" stroke-width="1.5" fill="none"/>
+        <line x1="8" y1="8" x2="28" y2="28" stroke="#C9A030" stroke-width="2"/>
+        <line x1="36" y1="8" x2="56" y2="28" stroke="#C9A030" stroke-width="2"/>
+        <line x1="8" y1="36" x2="28" y2="56" stroke="#C9A030" stroke-width="2"/>
+        <rect x="37" y="37" width="6" height="6" fill="rgba(201,160,48,.6)" transform="rotate(45 40 40)"/>
+      </svg>
+    </div>
+    <div class="sp-name">FINI <b>PLUS</b></div>
+    <div class="sp-divider"><div class="sdl"></div><div class="sdd"></div><div class="sdl"></div></div>
+    <div class="sp-sub">L'Excellence en Finition</div>
+    <button id="btn_start" class="btn-comm"><span>COMMENCER &nbsp;→</span></button>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app">
+
+  <!-- Android/Chrome install banner -->
+  <div id="install-bar">
+    <div class="ib-text">
+      <strong>📲 Installer FINI PLUS</strong>
+      Accès rapide · Fonctionne hors-ligne
+    </div>
+    <button class="ib-btn" id="install-btn">Installer</button>
+    <button class="ib-close" id="install-dismiss">✕</button>
+  </div>
+
+  <!-- iOS Safari guide -->
+  <div id="ios-bar">
+    <div class="ib-text">
+      <strong>📲 Ajouter à l'écran d'accueil</strong>
+      Appuyer <strong style="color:var(--gold2)">Partager 📤</strong> puis "Sur l'écran d'accueil"
+    </div>
+    <button class="ib-close" id="ios-dismiss">✕</button>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-logo">
+      <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
+        <rect x="8" y="8" width="28" height="28" stroke="#C9A030" stroke-width="2.5" fill="none"/>
+        <rect x="28" y="28" width="28" height="28" stroke="#C9A030" stroke-width="2.5" fill="none"/>
+        <rect x="18" y="18" width="28" height="28" stroke="rgba(201,160,48,.3)" stroke-width="1.5" fill="none"/>
+        <line x1="8" y1="8" x2="28" y2="28" stroke="#C9A030" stroke-width="1.8"/>
+        <line x1="36" y1="8" x2="56" y2="28" stroke="#C9A030" stroke-width="1.8"/>
+        <line x1="8" y1="36" x2="28" y2="56" stroke="#C9A030" stroke-width="1.8"/>
+      </svg>
+      <div class="tb-name">FINI <em>PLUS</em></div>
+    </div>
+    <div class="tb-right">
+      <button id="btn_lang" class="btn btn-ghost btn-sm">🌐 <span id="lbl_lang">AR</span></button>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <div class="content-area">
+
+    <!-- DASHBOARD -->
+    <div id="p-dash" class="page active">
+      <div class="stats-row">
+        <div class="stat-tile st-blue"><div class="stat-lbl" id="sl_devis">Devis</div><div class="stat-val" id="sv_devis">0</div></div>
+        <div class="stat-tile st-teal"><div class="stat-lbl" id="sl_fact">Factures</div><div class="stat-val" id="sv_fact">0</div></div>
+        <div class="stat-tile st-gold" style="grid-column:1/-1"><div class="stat-lbl" id="sl_ca">Chiffre d'affaires</div><div class="stat-val small" id="sv_ca">0,00 MAD</div></div>
+      </div>
+      <div class="qa-strip">
+        <button id="qa-devis" class="qa-btn qa-secondary">📋 <span id="qa_dv">Nouveau Devis</span></button>
+        <button id="qa-fact" class="qa-btn qa-primary">🧾 <span id="qa_fc">Nouvelle Facture</span></button>
+      </div>
+      <div class="sec-hd">
+        <span class="sec-ht" id="rct_lbl">Documents récents</span>
+        <button class="sec-all" id="see_all">Voir tout →</button>
+      </div>
+      <div id="dash-docs"></div>
+    </div>
+
+    <!-- DEVIS -->
+    <div id="p-devis" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink)" id="p_devis_title">Devis</span>
+        <button id="btn-new-devis" class="btn btn-ink btn-sm">+ <span id="bl_nd">Nouveau</span></button>
+      </div>
+      <div id="list-devis"></div>
+    </div>
+
+    <!-- FACTURES -->
+    <div id="p-fact" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink)" id="p_fact_title">Factures</span>
+        <button id="btn-new-fact" class="btn btn-ink btn-sm">+ <span id="bl_nf">Nouvelle</span></button>
+      </div>
+      <div id="list-fact"></div>
+    </div>
+
+    <!-- PRODUITS -->
+    <div id="p-prod" class="page">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink)" id="p_prod_title">Produits</span>
+        <button id="btn-new-prod" class="btn btn-ink btn-sm">+ <span id="bl_np">Nouveau</span></button>
+      </div>
+      <div id="list-prod"></div>
+    </div>
+
+    <!-- PARAMETRES -->
+    <div id="p-param" class="page">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:14px" id="p_param_title">Paramètres</p>
+      <div class="cfg-card">
+        <div class="cfg-title" id="cfg_soc">Informations Société</div>
+        <div class="fgrid">
+          <div class="fg full"><label class="flabel">Nom</label><input id="cfg_name" value="FINI PLUS"></div>
+          <div class="fg full"><label class="flabel">Adresse</label><input id="cfg_addr" value="APPT 11 ETAGE 2 IMM 12 RUE KENITRA V.N MEKNES"></div>
+          <div class="fg"><label class="flabel">Téléphone</label><input id="cfg_tel" value="+212 663-514404 | +212 671-245920"></div>
+          <div class="fg"><label class="flabel">Email</label><input id="cfg_email" value="fini.plus.sarl@gmail.com"></div>
+          <div class="fg"><label class="flabel">TVA %</label><input type="number" id="cfg_tva" value="20"></div>
+          <div class="fg"><label class="flabel">ICE</label><input id="cfg_ice" value="003644877000059"></div>
+          <div class="fg full"><label class="flabel">RC / Pat / CNSS</label><input id="cfg_rc" value="63545 / 17103679 / 5859318"></div>
+          <div class="fg"><label class="flabel">Capital</label><input id="cfg_capital" value="100 000,00 DHS"></div>
+          <div class="fg full"><label class="flabel">Slogan</label><input id="cfg_slogan" value="L'EXCELLENCE EN FINITION, ET BIEN PLUS ENCORE."></div>
+        </div>
+        <div style="margin-top:12px;">
+          <button id="btn-save-cfg" class="btn btn-ink">💾 <span id="bl_save">Enregistrer</span></button>
+        </div>
+      </div>
+      <div class="cfg-card">
+        <div class="cfg-title">Application</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.8">FINI PLUS v4.0 · PWA Ready<br>Fonctionne hors-ligne · Made by MOHAMED SADK</p>
+        <button id="btn-logout" class="btn btn-ghost btn-sm" style="margin-top:12px">← <span id="bl_logout">Retour accueil</span></button>
+      </div>
+    </div>
+
+
+    <!-- CALCULATRICE -->
+    <div id="p-calc" class="page">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:14px">
+        🧮 Calculatrice Matériaux
+      </p>
+
+      <!-- TYPE TABS -->
+      <div class="calc-tabs">
+        <button class="calc-tab active" data-ct="armstrong">Armstrong</button>
+        <button class="calc-tab" data-ct="ba13plaf">Plafond BA13</button>
+        <button class="calc-tab" data-ct="cloison">Cloison</button>
+        <button class="calc-tab" data-ct="doublage">Doublage</button>
+      </div>
+
+      <!-- ══ ARMSTRONG ══ -->
+      <div class="calc-panel active" id="cp-armstrong">
+        <div class="dim-card">
+          <div class="dim-title">📐 Dimensions de la pièce</div>
+          <div class="dim-grid">
+            <div class="dim-field">
+              <div class="dim-label">Longueur</div>
+              <input type="number" class="dim-input" id="arm-l" placeholder="5.40" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+            <div class="dim-field">
+              <div class="dim-label">Largeur</div>
+              <input type="number" class="dim-input" id="arm-w" placeholder="4.20" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+          </div>
+          <div class="surface-badge">
+            <div><div class="sb-label">Surface calculée</div></div>
+            <div class="sb-value" id="arm-surf">— m²</div>
+          </div>
+        </div>
+        <div class="opts-card">
+          <div class="opts-title">⚙️ Options</div>
+          <div class="opt-row">
+            <div><div class="opt-name">Hauteur de suspension</div><div class="opt-sub">Distance dalle au vrai plafond</div></div>
+            <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:90px" id="arm-hsusp">
+              <option value="0.1">10 cm</option>
+              <option value="0.2">20 cm</option>
+              <option value="0.3" selected>30 cm</option>
+              <option value="0.5">50 cm</option>
+            </select>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Marge de chute (+10%)</div><div class="opt-sub">Coupes et pertes de matériaux</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="arm-waste" checked><span class="toggle-btn"></span></label>
+          </div>
+        </div>
+        <button class="calc-btn" id="btn-calc-arm">⚡ Calculer les matériaux</button>
+        <div class="results-card" id="res-armstrong"></div>
+      </div>
+
+      <!-- ══ PLAFOND BA13 ══ -->
+      <div class="calc-panel" id="cp-ba13plaf">
+        <div class="dim-card">
+          <div class="dim-title">📐 Dimensions de la pièce</div>
+          <div class="dim-grid">
+            <div class="dim-field">
+              <div class="dim-label">Longueur</div>
+              <input type="number" class="dim-input" id="ba-l" placeholder="5.40" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+            <div class="dim-field">
+              <div class="dim-label">Largeur</div>
+              <input type="number" class="dim-input" id="ba-w" placeholder="4.20" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+          </div>
+          <div class="surface-badge">
+            <div><div class="sb-label">Surface calculée</div></div>
+            <div class="sb-value" id="ba-surf">— m²</div>
+          </div>
+        </div>
+        <div class="opts-card">
+          <div class="opts-title">⚙️ Options</div>
+          <div class="opt-row">
+            <div><div class="opt-name">Type de plaques</div></div>
+            <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:110px" id="ba-type">
+              <option value="std">Standard BA13</option>
+              <option value="hum">Hydrofuge (BA13H)</option>
+            </select>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Double épaisseur</div><div class="opt-sub">2 couches de BA13</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="ba-double"><span class="toggle-btn"></span></label>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Laine de verre (isolation)</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="ba-laine"><span class="toggle-btn"></span></label>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Marge de chute (+10%)</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="ba-waste" checked><span class="toggle-btn"></span></label>
+          </div>
+        </div>
+        <button class="calc-btn" id="btn-calc-ba">⚡ Calculer les matériaux</button>
+        <div class="results-card" id="res-ba13plaf"></div>
+      </div>
+
+      <!-- ══ CLOISON ══ -->
+      <div class="calc-panel" id="cp-cloison">
+        <div class="dim-card">
+          <div class="dim-title">📐 Dimensions de la cloison</div>
+          <div class="dim-grid">
+            <div class="dim-field">
+              <div class="dim-label">Longueur</div>
+              <input type="number" class="dim-input" id="cl-l" placeholder="6.00" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+            <div class="dim-field">
+              <div class="dim-label">Hauteur</div>
+              <input type="number" class="dim-input" id="cl-h" placeholder="2.70" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+          </div>
+          <div class="surface-badge">
+            <div><div class="sb-label">Surface calculée</div></div>
+            <div class="sb-value" id="cl-surf">— m²</div>
+          </div>
+        </div>
+        <div class="opts-card">
+          <div class="opts-title">⚙️ Options</div>
+          <div class="opt-row">
+            <div><div class="opt-name">Type de montant</div></div>
+            <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:100px" id="cl-mont">
+              <option value="48">Montant 48</option>
+              <option value="70">Montant 70</option>
+              <option value="100">Montant 100</option>
+            </select>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Laine de verre (isolation)</div><div class="opt-sub">Intercalée dans la cloison</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="cl-laine"><span class="toggle-btn"></span></label>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Déduire ouvertures</div><div class="opt-sub">Portes / fenêtres</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="cl-ouv"><span class="toggle-btn"></span></label>
+          </div>
+          <div id="cl-ouv-fields" style="display:none;margin-top:8px;padding:10px;background:var(--paper);border-radius:8px">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Surface totale des ouvertures</div>
+            <div class="dim-grid">
+              <div class="dim-field">
+                <div class="dim-label" style="color:var(--text2)">Largeur porte</div>
+                <input type="number" class="dim-input" id="cl-ow" placeholder="0.90" step="0.01" min="0" style="background:var(--border);color:var(--ink);font-size:15px">
+                <div class="dim-unit" style="color:var(--text2)">m</div>
+              </div>
+              <div class="dim-field">
+                <div class="dim-label" style="color:var(--text2)">Hauteur porte</div>
+                <input type="number" class="dim-input" id="cl-oh" placeholder="2.10" step="0.01" min="0" style="background:var(--border);color:var(--ink);font-size:15px">
+                <div class="dim-unit" style="color:var(--text2)">m</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px">Nombre d'ouvertures : <input type="number" id="cl-onb" value="1" min="0" style="width:50px;padding:4px;border:1.5px solid var(--border);border-radius:4px;font-size:13px"></div>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Marge de chute (+10%)</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="cl-waste" checked><span class="toggle-btn"></span></label>
+          </div>
+        </div>
+        <button class="calc-btn" id="btn-calc-cl">⚡ Calculer les matériaux</button>
+        <div class="results-card" id="res-cloison"></div>
+      </div>
+
+      <!-- ══ DOUBLAGE ══ -->
+      <div class="calc-panel" id="cp-doublage">
+        <div class="dim-card">
+          <div class="dim-title">📐 Dimensions du doublage</div>
+          <div class="dim-grid">
+            <div class="dim-field">
+              <div class="dim-label">Longueur mur</div>
+              <input type="number" class="dim-input" id="db-l" placeholder="5.00" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+            <div class="dim-field">
+              <div class="dim-label">Hauteur mur</div>
+              <input type="number" class="dim-input" id="db-h" placeholder="2.70" step="0.01" min="0">
+              <div class="dim-unit">mètres</div>
+            </div>
+          </div>
+          <div class="surface-badge">
+            <div><div class="sb-label">Surface calculée</div></div>
+            <div class="sb-value" id="db-surf">— m²</div>
+          </div>
+        </div>
+        <div class="opts-card">
+          <div class="opts-title">⚙️ Options</div>
+          <div class="opt-row">
+            <div><div class="opt-name">Type de montant</div></div>
+            <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:100px" id="db-mont">
+              <option value="48">Montant 48</option>
+              <option value="70" selected>Montant 70</option>
+            </select>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Isolation thermique</div><div class="opt-sub">Laine de roche / verre</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="db-laine"><span class="toggle-btn"></span></label>
+          </div>
+          <div class="opt-row">
+            <div><div class="opt-name">Marge de chute (+10%)</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle" id="db-waste" checked><span class="toggle-btn"></span></label>
+          </div>
+        </div>
+        <button class="calc-btn" id="btn-calc-db">⚡ Calculer les matériaux</button>
+        <div class="results-card" id="res-doublage"></div>
+      </div>
+
+    </div><!-- /calc page -->
+
+  </div><!-- /content-area -->
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="bn-item active" data-page="dash">
+      <span class="bn-icon">◈</span>
+      <span class="bn-label" id="bn_dash">Accueil</span>
+    </button>
+    <button class="bn-item" data-page="devis">
+      <span class="bn-icon">◻</span>
+      <span class="bn-label" id="bn_devis">Devis</span>
+    </button>
+    <button class="bn-item" data-page="calc" style="position:relative">
+      <span class="bn-icon" style="font-size:22px">🧮</span>
+      <span class="bn-label" id="bn_calc">Calcul</span>
+    </button>
+    <button class="bn-item" data-page="fact">
+      <span class="bn-icon">◼</span>
+      <span class="bn-label" id="bn_fact">Factures</span>
+    </button>
+    <button class="bn-item" data-page="param">
+      <span class="bn-icon">◉</span>
+      <span class="bn-label" id="bn_param">Réglages</span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- DOC MODAL -->
+<div class="overlay" id="modal-doc">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="mhead">
+      <h2 id="m-doc-title">Nouveau document</h2>
+      <button class="mclose" id="close-doc">✕</button>
+    </div>
+    <div class="mbody">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px" id="ml_client">Client</p>
+      <div class="fgrid">
+        <div class="fg full"><label class="flabel" id="ml_cname">Nom du client</label><input id="f_cname" placeholder="Société / Particulier"></div>
+        <div class="fg"><label class="flabel" id="ml_ctel">Téléphone</label><input id="f_ctel"></div>
+        <div class="fg"><label class="flabel" id="ml_caddr">Adresse</label><input id="f_caddr"></div>
+      </div>
+      <hr class="div">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2)" id="ml_items">Articles</p>
+        <button id="btn-add-item" class="btn btn-ghost btn-sm">+ <span id="ml_add">Ajouter</span></button>
+      </div>
+      <div class="itbl-wrap">
+        <table class="itbl">
+          <thead><tr>
+            <th id="it_des" style="width:36%">Désignation</th>
+            <th id="it_unit" style="width:9%">Unité</th>
+            <th id="it_qty" style="width:9%">Qté</th>
+            <th id="it_pu" style="width:16%">P.U HT</th>
+            <th id="it_pt" style="width:16%">P.T HT</th>
+            <th style="width:7%"></th>
+          </tr></thead>
+          <tbody id="items-body"></tbody>
+        </table>
+      </div>
+      <div class="totbox">
+        <div class="tr-row"><span id="tl_ht">Sous-total HT</span><span id="tot-ht">0,00 MAD</span></div>
+        <div class="tr-row"><span id="tl_tva">TVA (20%)</span><span id="tot-tva">0,00 MAD</span></div>
+        <div class="tr-row main"><span id="tl_ttc">Total TTC</span><span id="tot-ttc">0,00 MAD</span></div>
+      </div>
+      <hr class="div">
+      <div class="fgrid">
+        <div class="fg">
+          <label class="flabel" id="ml_stat">Statut</label>
+          <select id="f_statut">
+            <option value="pending" id="opt_p">En attente</option>
+            <option value="paid" id="opt_a">Payée / Acceptée</option>
+            <option value="cancelled" id="opt_c">Annulée</option>
+          </select>
+        </div>
+        <div class="fg"><label class="flabel" id="ml_date">Date</label><input type="date" id="f_date"></div>
+        <div class="fg full"><label class="flabel" id="ml_notes">Notes</label><textarea id="f_notes"></textarea></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button id="cancel-doc" class="btn btn-ghost">Annuler</button>
+      <button id="save-doc" class="btn btn-ink">💾 <span id="bl_savedoc">Enregistrer</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- PROD MODAL -->
+<div class="overlay" id="modal-prod">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <div class="mhead"><h2 id="m-prod-title">Nouveau produit</h2><button class="mclose" id="close-prod">✕</button></div>
+    <div class="mbody">
+      <div class="fg" style="margin-bottom:10px"><label class="flabel" id="pl_name">Nom</label><input id="p_name"></div>
+      <div class="fg" style="margin-bottom:10px"><label class="flabel" id="pl_desc">Description</label><textarea id="p_desc"></textarea></div>
+      <div class="fgrid">
+        <div class="fg"><label class="flabel" id="pl_unite">Unité</label>
+          <select id="p_unite"><option>U</option><option>M²</option><option>ML</option><option>M³</option><option>KG</option><option>Lot</option><option>Jrs</option></select>
+        </div>
+        <div class="fg"><label class="flabel" id="pl_prix">Prix HT (MAD)</label><input type="number" id="p_prix"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button id="cancel-prod" class="btn btn-ghost">Annuler</button>
+      <button id="save-prod" class="btn btn-ink">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW OVERLAY -->
+<div id="preview-overlay">
+  <div class="prev-topbar">
+    <button id="prev-close" class="btn btn-ghost btn-sm">← <span id="pr_back">Retour</span></button>
+    <button id="prev-dl" class="btn btn-gold btn-sm">⬇ <span id="pr_dl">PDF</span></button>
+    <button id="prev-wa" class="btn btn-sm" style="background:#25D366;color:#fff;border:none;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span id="pr_wa">WhatsApp</span>
+    </button>
+    <button id="prev-print" class="btn btn-ghost btn-sm">🖨️</button>
+  </div>
+  <div class="prev-body"><div id="preview-doc"></div></div>
+</div>
+
+<!-- PDF PROGRESS -->
+<div id="pdf-overlay">
+  <div class="pdf-box">
+    <div class="pb-icon">📄</div>
+    <div class="pb-msg" id="pdf-msg">Génération PDF...</div>
+    <div class="pdf-track"><div class="pdf-fill" id="pdf-fill"></div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+
+/* ══ DATA ══ */
+var cfg = {
+  name:'FINI PLUS', addr:'APPT 11 ETAGE 2 IMM 12 RUE KENITRA V.N MEKNES',
+  tel:'+212 663-514404 | +212 671-245920', email:'fini.plus.sarl@gmail.com',
+  tva:20, ice:'003644877000059', rc:'63545', pat:'17103679', cnss:'5859318',
+  capital:'100 000,00 DHS', slogan:"L'EXCELLENCE EN FINITION, ET BIEN PLUS ENCORE."
+};
+var devis=[], factures=[];
+var produits=[
+  {id:1,name:'Faux plafond Armstrong',desc:'Fourniture et pose',unite:'M²',prix:140},
+  {id:2,name:'Panneau LED encastrable MQL',desc:'Haute performance – Garantie 1 an',unite:'U',prix:240},
+  {id:3,name:"Main d'œuvre pose LED",desc:'Câblage et raccordement inclus',unite:'U',prix:50},
+  {id:4,name:'Conseil technique',desc:'Audit et conseil',unite:'Jrs',prix:800}
+];
+var dvCounter=1, fcCounter=1;
+var lang='fr';
+var docItems=[], editDocIdx=null, docType='devis';
+var editProdIdx=null;
+var curDocNum='', curDocType='';
+
+/* ══ TRANSLATIONS ══ */
+var TR = {
+  fr:{
+    dash:'Accueil', devis:'Devis', fact:'Factures', prod:'Produits', param:'Réglages',
+    nd:'Nouveau', nf:'Nouvelle', np:'Nouveau produit',
+    save:'Enregistrer', cancel:'Annuler', back:'Retour', dl:'PDF', wa:'WhatsApp',
+    client:'Client', cname:'Nom du client', ctel:'Téléphone', caddr:'Adresse',
+    items:'Articles', add:'Ajouter',
+    des:'Désignation', unit:'Unité', qty:'Qté', pu:'P.U HT', pt:'P.T HT',
+    stat:'Statut', date:'Date', notes:'Notes',
+    pending:'En attente', paid:'Payée / Acceptée', cancelled:'Annulée',
+    ht:'Sous-total HT', tva:'TVA', ttc:'Total TTC',
+    noDv:'Aucun devis créé', noFc:'Aucune facture créée',
+    ca:"Chiffre d'affaires", dvl:'Devis', fcl:'Factures',
+    recent:'Documents récents', seeAll:'Voir tout →',
+    pnom:'Nom', pdesc:'Description', punite:'Unité', pprix:'Prix HT (MAD)',
+    soc:'Informations Société', savedOk:'✅ Enregistré !',
+    qaD:'Nouveau Devis', qaF:'Nouvelle Facture',
+    logout:'Retour accueil', billTo:'Client',
+    dlOk:'✅ PDF téléchargé !', waOk:'✅ Partagé !', waTip:'📥 PDF téléchargé – joindre dans WhatsApp'
+  },
+  ar:{
+    dash:'الرئيسية', devis:'العروض', fact:'الفواتير', prod:'المنتجات', param:'الإعدادات',
+    nd:'جديد', nf:'جديدة', np:'منتج جديد',
+    save:'حفظ', cancel:'إلغاء', back:'رجوع', dl:'PDF', wa:'واتساب',
+    client:'العميل', cname:'اسم العميل', ctel:'الهاتف', caddr:'العنوان',
+    items:'المنتجات', add:'إضافة',
+    des:'الوصف', unit:'الوحدة', qty:'الكمية', pu:'سعر الوحدة', pt:'المجموع',
+    stat:'الحالة', date:'التاريخ', notes:'ملاحظات',
+    pending:'قيد الانتظار', paid:'مدفوعة', cancelled:'ملغاة',
+    ht:'المجموع بدون ضريبة', tva:'TVA', ttc:'المجموع مع الضريبة',
+    noDv:'لا توجد عروض', noFc:'لا توجد فواتير',
+    ca:'رقم الأعمال', dvl:'العروض', fcl:'الفواتير',
+    recent:'المستندات الأخيرة', seeAll:'عرض الكل →',
+    pnom:'الاسم', pdesc:'الوصف', punite:'الوحدة', pprix:'السعر (MAD)',
+    soc:'معلومات الشركة', savedOk:'✅ تم الحفظ !',
+    qaD:'عرض سعر جديد', qaF:'فاتورة جديدة',
+    logout:'العودة للرئيسية', billTo:'العميل',
+    dlOk:'✅ تم تنزيل PDF', waOk:'✅ تمت المشاركة', waTip:'📥 تم تنزيل PDF – أرفقه في واتساب'
+  }
+};
+function T(k){ return TR[lang][k]||k; }
+function fmt(n){ return Number(n).toLocaleString('fr-MA',{minimumFractionDigits:2})+' MAD'; }
+function $(id){ return document.getElementById(id); }
+function st(id,t){ var e=$(id); if(e) e.textContent=t; }
+function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2800); }
+function badge(s){
+  var map={paid:['b-paid','✓ '+T('paid')],pending:['b-pending','◷ '+T('pending')],cancelled:['b-cancelled','✗ '+T('cancelled')]};
+  var x=map[s]||['b-pending',s];
+  return '<span class="badge '+x[0]+'">'+x[1]+'</span>';
+}
+
+/* ══ LANG ══ */
+function setLang(l){
+  lang=l;
+  document.documentElement.lang=l;
+  document.body.className=l==='ar'?'ar':'';
+  applyTr(); renderAll();
+}
+function applyTr(){
+  st('lbl_lang', lang==='fr'?'AR':'FR');
+  st('bn_dash',T('dash')); st('bn_devis',T('devis')); st('bn_fact',T('fact'));
+  st('bn_prod',T('prod')); st('bn_param',T('param'));
+  st('sl_devis',T('dvl')); st('sl_fact',T('fcl')); st('sl_ca',T('ca'));
+  st('qa_dv',T('qaD')); st('qa_fc',T('qaF'));
+  st('rct_lbl',T('recent')); st('see_all',T('seeAll'));
+  st('p_devis_title',T('devis')); st('bl_nd',T('nd'));
+  st('p_fact_title',T('fact')); st('bl_nf',T('nf'));
+  st('p_prod_title',T('prod')); st('bl_np',T('np'));
+  st('p_param_title',T('param'));
+  st('ml_client',T('client')); st('ml_cname',T('cname'));
+  st('ml_ctel',T('ctel')); st('ml_caddr',T('caddr'));
+  st('ml_items',T('items')); st('ml_add',T('add'));
+  st('it_des',T('des')); st('it_unit',T('unit')); st('it_qty',T('qty'));
+  st('it_pu',T('pu')); st('it_pt',T('pt'));
+  st('ml_stat',T('stat')); st('ml_date',T('date')); st('ml_notes',T('notes'));
+  st('opt_p',T('pending')); st('opt_a',T('paid')); st('opt_c',T('cancelled'));
+  st('tl_ht',T('ht')); st('tl_tva',T('tva')+' ('+cfg.tva+'%)'); st('tl_ttc',T('ttc'));
+  st('bl_savedoc',T('save'));
+  st('pl_name',T('pnom')); st('pl_desc',T('pdesc')); st('pl_unite',T('punite')); st('pl_prix',T('pprix'));
+  st('cfg_soc',T('soc')); st('bl_save',T('save'));
+  st('bl_logout',T('logout'));
+  st('pr_back',T('back')); st('pr_dl',T('dl')); st('pr_wa',T('wa'));
+}
+
+/* ══ NAV ══ */
+function goPage(pg){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.bn-item').forEach(function(b){ b.classList.remove('active'); });
+  var p=$('p-'+pg); if(p) p.classList.add('active');
+  var b=document.querySelector('[data-page="'+pg+'"]'); if(b) b.classList.add('active');
+}
+
+/* ══ RENDER ══ */
+function renderAll(){ renderDash(); renderDevis(); renderFact(); renderProd(); }
+
+function renderDash(){
+  st('sv_devis',devis.length);
+  st('sv_fact',factures.length);
+  var ca=factures.reduce(function(s,f){ return s+f.totalHT; },0);
+  st('sv_ca',fmt(ca));
+  // Recent: last 5 from both combined
+  var all=[].concat(
+    devis.map(function(d,i){ return Object.assign({},d,{_type:'devis',_i:i}); }),
+    factures.map(function(d,i){ return Object.assign({},d,{_type:'facture',_i:i}); })
+  ).slice(-6).reverse();
+  var el=$('dash-docs');
+  if(!all.length){ el.innerHTML=emptyState('dash'); return; }
+  el.innerHTML=all.map(function(d){ return docCard(d,d._i,d._type); }).join('');
+}
+
+function renderDevis(){
+  var el=$('list-devis');
+  if(!devis.length){ el.innerHTML=emptyState('devis'); return; }
+  el.innerHTML=devis.slice().reverse().map(function(d,ri){
+    var i=devis.length-1-ri;
+    return docCard(d,i,'devis');
+  }).join('');
+}
+function renderFact(){
+  var el=$('list-fact');
+  if(!factures.length){ el.innerHTML=emptyState('fact'); return; }
+  el.innerHTML=factures.slice().reverse().map(function(d,ri){
+    var i=factures.length-1-ri;
+    return docCard(d,i,'facture');
+  }).join('');
+}
+
+function docCard(d,i,type){
+  return '<div class="doc-card dc-'+type+'">'+
+    '<div class="dc-top">'+
+    '<span class="dc-num">'+d.num+'</span>'+
+    '<span class="dc-date">'+d.date+'</span>'+
+    '</div>'+
+    '<div class="dc-client">'+d.cname+'</div>'+
+    '<div class="dc-mid">'+
+    '<div class="dc-amount">'+fmt(d.totalTTC)+'<br><small>TTC</small></div>'+
+    badge(d.statut)+
+    '</div>'+
+    '<div class="dc-actions">'+
+    '<button class="dca-btn dca-pdf" data-ac="pdf" data-i="'+i+'" data-t="'+type+'">⬇ PDF</button>'+
+    '<button class="dca-btn dca-wa" data-ac="wa" data-i="'+i+'" data-t="'+type+'">'+
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>'+
+      ' WA</button>'+
+    '<button class="dca-btn dca-view" data-ac="view" data-i="'+i+'" data-t="'+type+'">👁 Voir</button>'+
+    '<button class="dca-btn dca-del" data-ac="del" data-i="'+i+'" data-t="'+type+'">✕</button>'+
+    '</div>'+
+    '</div>';
+}
+
+function emptyState(pg){
+  var msgs={devis:T('noDv'),fact:T('noFc'),dash:T('noDv')};
+  return '<div class="empty-state"><div class="empty-icon">'+(pg==='fact'?'◼':'◻')+'</div>'+
+    '<div class="empty-title">'+(msgs[pg]||'Vide')+'</div>'+
+    '<div class="empty-sub">Créez votre premier document</div></div>';
+}
+
+function renderProd(){
+  var el=$('list-prod');
+  if(!produits.length){ el.innerHTML='<div class="empty-state"><div class="empty-title">Aucun produit</div></div>'; return; }
+  el.innerHTML=produits.map(function(p,i){
+    return '<div class="prod-card">'+
+      '<div class="prod-dot"></div>'+
+      '<div class="prod-info"><div class="prod-name">'+p.name+'</div><div class="prod-desc">'+p.desc+' · '+p.unite+'</div></div>'+
+      '<div class="prod-price">'+fmt(p.prix)+'</div>'+
+      '<div class="prod-acts">'+
+        '<button class="btn btn-ghost btn-icon btn-sm" data-ac="editprod" data-i="'+i+'">✎</button>'+
+        '<button class="btn btn-ghost btn-icon btn-sm" data-ac="delprod" data-i="'+i+'" style="color:var(--rose)">✕</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ══ DOC MODAL ══ */
+function openDocModal(type){
+  docType=type; editDocIdx=null;
+  docItems=[{prodId:'',qty:1,pu:0,unite:'U'}];
+  $('f_cname').value=''; $('f_ctel').value=''; $('f_caddr').value='';
+  $('f_statut').value='pending';
+  $('f_date').value=new Date().toISOString().split('T')[0];
+  $('f_notes').value='';
+  $('m-doc-title').textContent=T(type==='devis'?'qaD':'qaF');
+  renderItems(); $('modal-doc').classList.add('open');
+}
+function editDoc(idx,type){
+  var list=type==='devis'?devis:factures, d=list[idx];
+  docType=type; editDocIdx=idx;
+  docItems=JSON.parse(JSON.stringify(d.items));
+  $('f_cname').value=d.cname; $('f_ctel').value=d.ctel||''; $('f_caddr').value=d.caddr||'';
+  $('f_statut').value=d.statut; $('f_date').value=d.date; $('f_notes').value=d.notes||'';
+  $('m-doc-title').textContent='✎ '+d.num;
+  renderItems(); $('modal-doc').classList.add('open');
+}
+function closeDocModal(){ $('modal-doc').classList.remove('open'); }
+
+function renderItems(){
+  var opts=produits.map(function(p){
+    return '<option value="'+p.id+'" data-px="'+p.prix+'" data-un="'+p.unite+'">'+p.name+'</option>';
+  }).join('');
+  var uopts=['U','M²','ML','M³','KG','Lot','Jrs'].map(function(u){ return '<option>'+u+'</option>'; }).join('');
+  $('items-body').innerHTML=docItems.map(function(item,i){
+    return '<tr>'+
+      '<td><select id="sp'+i+'" data-ii="'+i+'" class="isel" style="width:100%"><option value="">—</option>'+opts+'</select></td>'+
+      '<td><select id="su'+i+'" data-ii="'+i+'" class="usel">'+uopts+'</select></td>'+
+      '<td><input type="number" id="sq'+i+'" data-ii="'+i+'" class="qinp" min="1" value="'+item.qty+'"></td>'+
+      '<td><input type="number" id="spu'+i+'" data-ii="'+i+'" class="puinp" min="0" step="0.01" value="'+item.pu+'"></td>'+
+      '<td><input readonly id="spt'+i+'" value="'+(item.qty*item.pu).toFixed(2)+'" style="background:var(--border)"></td>'+
+      '<td><button class="btn btn-ghost btn-icon btn-sm idel" data-ii="'+i+'" style="color:var(--rose);padding:4px 6px;">✕</button></td>'+
+    '</tr>';
+  }).join('');
+  docItems.forEach(function(item,i){
+    var ps=$('sp'+i); if(ps&&item.prodId) ps.value=item.prodId;
+    var us=$('su'+i); if(us&&item.unite) us.value=item.unite;
+  });
+  // Events
+  document.querySelectorAll('.isel').forEach(function(s){
+    s.addEventListener('change',function(){
+      var i=parseInt(this.dataset.ii), opt=this.options[this.selectedIndex];
+      var px=parseFloat(opt.dataset.px||0), un=opt.dataset.un||'U';
+      docItems[i].prodId=this.value; docItems[i].pu=px; docItems[i].unite=un;
+      var pu=$('spu'+i); if(pu) pu.value=px;
+      var us=$('su'+i); if(us) us.value=un;
+      var pt=$('spt'+i); if(pt) pt.value=(docItems[i].qty*px).toFixed(2);
+      calcTot();
+    });
+  });
+  document.querySelectorAll('.usel').forEach(function(s){
+    s.addEventListener('change',function(){ docItems[parseInt(this.dataset.ii)].unite=this.value; });
+  });
+  document.querySelectorAll('.qinp').forEach(function(s){
+    s.addEventListener('input',function(){
+      var i=parseInt(this.dataset.ii); docItems[i].qty=parseFloat(this.value)||1;
+      var pt=$('spt'+i); if(pt) pt.value=(docItems[i].qty*docItems[i].pu).toFixed(2); calcTot();
+    });
+  });
+  document.querySelectorAll('.puinp').forEach(function(s){
+    s.addEventListener('input',function(){
+      var i=parseInt(this.dataset.ii); docItems[i].pu=parseFloat(this.value)||0;
+      var pt=$('spt'+i); if(pt) pt.value=(docItems[i].qty*docItems[i].pu).toFixed(2); calcTot();
+    });
+  });
+  document.querySelectorAll('.idel').forEach(function(b){
+    b.addEventListener('click',function(){
+      docItems.splice(parseInt(this.dataset.ii),1);
+      if(!docItems.length) docItems.push({prodId:'',qty:1,pu:0,unite:'U'});
+      renderItems();
+    });
+  });
+  calcTot();
+}
+function calcTot(){
+  var tva=cfg.tva, ht=docItems.reduce(function(s,it){ return s+it.qty*it.pu; },0);
+  var ta=ht*tva/100;
+  $('tot-ht').textContent=fmt(ht); $('tot-tva').textContent=fmt(ta); $('tot-ttc').textContent=fmt(ht+ta);
+  $('tl_tva').textContent=T('tva')+' ('+tva+'%)';
+}
+function saveDoc(){
+  var tva=cfg.tva, ht=docItems.reduce(function(s,it){ return s+it.qty*it.pu; },0);
+  var doc={
+    cname:$('f_cname').value||'Client', ctel:$('f_ctel').value, caddr:$('f_caddr').value,
+    statut:$('f_statut').value, date:$('f_date').value, notes:$('f_notes').value,
+    items:JSON.parse(JSON.stringify(docItems)),
+    totalHT:ht, totalTTC:ht*(1+tva/100)
+  };
+  var list=docType==='devis'?devis:factures;
+  if(editDocIdx!==null){ doc.num=list[editDocIdx].num; list[editDocIdx]=doc; }
+  else {
+    var c=docType==='devis'?dvCounter++:fcCounter++;
+    doc.num=(docType==='devis'?'DEV':'FAC')+'-'+String(c).padStart(4,'0')+'-'+new Date().getFullYear();
+    list.push(doc);
+  }
+  closeDocModal(); renderAll(); toast(T('savedOk'));
+}
+
+/* ══ PROD MODAL ══ */
+function openProdModal(){
+  editProdIdx=null;
+  $('p_name').value=''; $('p_desc').value=''; $('p_prix').value=''; $('p_unite').value='U';
+  $('m-prod-title').textContent=T('np'); $('modal-prod').classList.add('open');
+}
+function editProd(i){
+  editProdIdx=i; var p=produits[i];
+  $('p_name').value=p.name; $('p_desc').value=p.desc; $('p_prix').value=p.prix; $('p_unite').value=p.unite||'U';
+  $('m-prod-title').textContent='✎ '+p.name; $('modal-prod').classList.add('open');
+}
+function saveProd(){
+  var p={ id:editProdIdx!==null?produits[editProdIdx].id:Date.now(),
+    name:$('p_name').value||'Produit', desc:$('p_desc').value,
+    unite:$('p_unite').value||'U', prix:parseFloat($('p_prix').value)||0 };
+  if(editProdIdx!==null) produits[editProdIdx]=p; else produits.push(p);
+  $('modal-prod').classList.remove('open'); renderProd(); toast(T('savedOk'));
+}
+
+/* ══ SETTINGS ══ */
+function saveCfg(){
+  cfg.name=$('cfg_name').value; cfg.addr=$('cfg_addr').value;
+  cfg.tel=$('cfg_tel').value; cfg.email=$('cfg_email').value;
+  cfg.tva=parseFloat($('cfg_tva').value)||20; cfg.ice=$('cfg_ice').value;
+  cfg.capital=$('cfg_capital').value; cfg.slogan=$('cfg_slogan').value;
+  var rv=($('cfg_rc').value||'').split('/').map(function(x){ return x.trim(); });
+  cfg.rc=rv[0]||''; cfg.pat=rv[1]||''; cfg.cnss=rv[2]||'';
+  toast(T('savedOk'));
+}
+
+/* ══ N2W (French) ══ */
+function n2w(n){
+  var ones=['','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+  var tens=['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+  function b100(n){
+    if(n<20) return ones[n];
+    var t=Math.floor(n/10),u=n%10;
+    if(t===7||t===9) return tens[t]+'-'+ones[10+u];
+    return tens[t]+(u?(u===1&&t!==8?'-et-un':'-'+ones[u]):(t===8?'s':''));
+  }
+  function b1k(n){
+    if(n<100) return b100(n);
+    var h=Math.floor(n/100),r=n%100;
+    return(h===1?'cent':ones[h]+' cent')+(r?' '+b100(r):(h>1?'s':''));
+  }
+  var ip=Math.floor(n), dp=Math.round((n-ip)*100), th=Math.floor(ip/1000), hh=ip%1000, res='';
+  if(th) res+=(th===1?'mille':b1k(th)+' mille')+' ';
+  if(hh) res+=b1k(hh);
+  res=(res.trim()||'zéro');
+  res=res.charAt(0).toUpperCase()+res.slice(1)+' dirhams';
+  if(dp) res+=' et '+b100(dp)+' centimes';
+  return res;
+}
+
+/* ══ LOGO SVG ══ */
+function logoSVG(sz){
+  return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 80 80" fill="none">'+
+    '<rect x="8" y="8" width="28" height="28" stroke="#1A3A6E" stroke-width="2" fill="none"/>'+
+    '<rect x="28" y="28" width="28" height="28" stroke="#1A3A6E" stroke-width="2" fill="none"/>'+
+    '<rect x="18" y="18" width="28" height="28" stroke="rgba(26,58,110,.3)" stroke-width="1.5" fill="none"/>'+
+    '<line x1="8" y1="8" x2="28" y2="28" stroke="#1A3A6E" stroke-width="1.5"/>'+
+    '<line x1="36" y1="8" x2="56" y2="28" stroke="#1A3A6E" stroke-width="1.5"/>'+
+    '<line x1="8" y1="36" x2="28" y2="56" stroke="#1A3A6E" stroke-width="1.5"/>'+
+    '</svg>';
+}
+
+/* ══ PREVIEW ══ */
+function previewDoc(idx,type){
+  var list=type==='devis'?devis:factures, d=list[idx];
+  var tva=cfg.tva, ta=d.totalHT*tva/100;
+  curDocNum=d.num; curDocType=type;
+  var rows=d.items.map(function(it){
+    var pr=produits.find(function(p){ return String(p.id)===String(it.prodId); });
+    var nm=pr?pr.name+(pr.desc?'<br><small style="color:#666;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'–');
+    return '<tr>'+
+      '<td style="padding:9px 10px;border-bottom:1px solid #ddd;font-size:12px;">'+nm+'</td>'+
+      '<td style="padding:9px 6px;border-bottom:1px solid #ddd;text-align:center;font-size:12px;">'+(it.unite||'U')+'</td>'+
+      '<td style="padding:9px 6px;border-bottom:1px solid #ddd;text-align:center;font-size:12px;">'+Number(it.qty).toFixed(2)+'</td>'+
+      '<td style="padding:9px 6px;border-bottom:1px solid #ddd;text-align:right;font-size:12px;">'+Number(it.pu).toFixed(2)+'</td>'+
+      '<td style="padding:9px 6px;border-bottom:1px solid #ddd;text-align:right;font-size:12px;font-weight:700;">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+    '</tr>';
+  }).join('');
+  $('preview-doc').innerHTML=
+    '<div style="background:#fff;padding:32px;font-family:sans-serif;color:#0A1628;max-width:720px;margin:0 auto">'+
+    '<div style="text-align:center;margin-bottom:20px">'+logoSVG(52)+
+    '<div style="font-family:Georgia,serif;font-size:24px;font-weight:300;letter-spacing:6px;margin-top:6px">FINI <strong>PLUS</strong></div>'+
+    '<div style="font-size:9px;letter-spacing:2px;color:#888;margin-top:3px">'+cfg.slogan+'</div></div>'+
+    '<div style="text-align:right;font-size:11px;color:#666;margin-bottom:4px">Date : '+d.date+'</div>'+
+    '<div style="background:#0B1A2E;color:#fff;text-align:center;padding:8px;font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:14px">'+
+      (type==='devis'?'DEVIS':'FACTURE')+' — '+d.num+
+    '</div>'+
+    '<div style="font-size:12px;margin-bottom:14px;padding:10px 12px;background:#F0F5FF;border-left:3px solid #1A5A9E">'+
+      '<strong>'+T('billTo')+' :</strong> '+d.cname+(d.caddr?' — '+d.caddr:'')+(d.ctel?' | '+d.ctel:'')+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr style="background:#0B1A2E;color:rgba(255,255,255,.7)">'+
+    '<th style="padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1px">Désignations</th>'+
+    '<th style="padding:9px 6px;text-align:center;font-size:10px;width:9%">Unité</th>'+
+    '<th style="padding:9px 6px;text-align:center;font-size:10px;width:10%">Qté</th>'+
+    '<th style="padding:9px 6px;text-align:right;font-size:10px;width:13%">P.U HT</th>'+
+    '<th style="padding:9px 6px;text-align:right;font-size:10px;width:13%">P.T HT</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody>'+
+    '<tr><td colspan="3"></td>'+
+    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #ddd">TOTAL HT</td>'+
+    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #ddd">'+Number(d.totalHT).toFixed(2)+'</td></tr>'+
+    '<tr><td colspan="3"></td>'+
+    '<td style="padding:5px 6px;text-align:right;font-size:12px">TVA ('+tva+'%)</td>'+
+    '<td style="padding:5px 6px;text-align:right;font-size:12px">'+ta.toFixed(2)+'</td></tr>'+
+    '<tr style="background:#EEF3FF"><td colspan="3"></td>'+
+    '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E">TOTAL TTC</td>'+
+    '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E">'+Number(d.totalTTC).toFixed(2)+'</td></tr>'+
+    '</table>'+
+    (d.notes?'<div style="margin-top:12px;font-size:11px;color:#555;padding:9px;background:#f9f9f9;border-left:2px solid #ccc">'+d.notes+'</div>':'')+
+    '<div style="margin-top:14px;font-size:11px;color:#333;border-top:1px solid #ddd;padding-top:10px">'+
+    '<strong>ARRÊTÉ LA PRÉSENTE '+(type==='devis'?'DEVIS':'FACTURE')+' À LA SOMME DE :</strong><br>'+
+    '<em style="color:#1A5A9E"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+    '</div>'+
+    '<div style="margin-top:20px;text-align:center">'+logoSVG(28)+
+    '<div style="font-family:Georgia,serif;font-size:10px;letter-spacing:3px;font-weight:600;margin-top:2px">FINI PLUS</div></div>'+
+    '<div style="margin-top:8px;border-top:1px dashed #ccc;padding-top:8px;text-align:center;font-size:9px;color:#999;line-height:2">'+
+    'SARL au Capital de '+cfg.capital+' — '+cfg.addr+'<br>'+
+    'RC : '+cfg.rc+' / Pat : '+cfg.pat+' / CNSS : '+cfg.cnss+' / ICE : '+cfg.ice+'<br>'+
+    cfg.tel+' | '+cfg.email+
+    '</div>'+
+    '</div>';
+  $('preview-overlay').classList.add('open');
+}
+
+/* ══ PDF ══ */
+function setPdf(pct,msg){
+  var f=$('pdf-fill'); if(f) f.style.width=pct+'%';
+  var m=$('pdf-msg'); if(m&&msg) m.textContent=msg;
+}
+function showPdf(show){ $('pdf-overlay').classList[show?'add':'remove']('show'); if(!show) setPdf(0,''); }
+
+function generatePDF(callback){
+  var ct=$('preview-doc'); if(!ct){ alert('Ouvrez d\'abord l\'aperçu'); return; }
+  showPdf(true); setPdf(10, lang==='ar'?'جاري إنشاء PDF...':'Génération PDF...');
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;z-index:-1;';
+  wrap.innerHTML=ct.innerHTML;
+  document.body.appendChild(wrap);
+  setTimeout(function(){
+    setPdf(30, lang==='ar'?'معالجة...':'Traitement...');
+    html2canvas(wrap,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,width:794,windowWidth:794})
+    .then(function(canvas){
+      document.body.removeChild(wrap);
+      setPdf(75, lang==='ar'?'إنشاء الملف...':'Création fichier...');
+      var imgData=canvas.toDataURL('image/jpeg',0.95);
+      var jsPDF=window.jspdf?window.jspdf.jsPDF:window.jsPDF;
+      var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      var pageW=210,pageH=297,margin=8,imgW=pageW-margin*2;
+      var imgH=(canvas.height*imgW)/canvas.width;
+      var y=margin,first=true;
+      while((y-margin)<imgH){
+        if(!first) pdf.addPage();
+        pdf.addImage(imgData,'JPEG',margin,margin-(y-margin),imgW,imgH);
+        y+=pageH-margin*2; first=false;
+      }
+      setPdf(100,'✅ Terminé!');
+      setTimeout(function(){ showPdf(false); },600);
+      callback(pdf);
+    }).catch(function(err){
+      if(document.body.contains(wrap)) document.body.removeChild(wrap);
+      showPdf(false); console.error(err);
+      alert(lang==='ar'?'خطأ في PDF':'Erreur PDF');
+    });
+  },120);
+}
+
+/* Generate PDF directly from doc data WITHOUT preview being open */
+function generatePDFForDoc(idx,type,callback){
+  var list=type==='devis'?devis:factures, d=list[idx];
+  curDocNum=d.num; curDocType=type;
+  // Temporarily populate preview-doc
+  previewDoc(idx,type);
+  $('preview-overlay').classList.remove('open');
+  setTimeout(function(){ generatePDF(callback); },150);
+}
+
+function doDownload(idx,type){
+  var jsPDF=window.jspdf?window.jspdf.jsPDF:window.jsPDF;
+  if(!jsPDF){ alert('jsPDF non chargé'); return; }
+  generatePDFForDoc(idx,type,function(pdf){
+    pdf.save((curDocNum||'document')+'.pdf');
+    toast(T('dlOk'));
+  });
+}
+function doWA(idx,type){
+  var jsPDF=window.jspdf?window.jspdf.jsPDF:window.jsPDF;
+  if(!jsPDF){ alert('jsPDF non chargé'); return; }
+  generatePDFForDoc(idx,type,function(pdf){
+    var fname=(curDocNum||'document')+'.pdf';
+    var blob=pdf.output('blob');
+    var file=new File([blob],fname,{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'FINI PLUS — '+curDocNum,text:curDocNum+' — FINI PLUS'})
+      .then(function(){ toast(T('waOk')); })
+      .catch(function(e){ if(e.name!=='AbortError') fallbackWA(pdf,fname); });
+    } else { fallbackWA(pdf,fname); }
+  });
+}
+function fallbackWA(pdf,fname){
+  pdf.save(fname);
+  setTimeout(function(){
+    var msg=encodeURIComponent((lang==='ar'?'الوثيقة : ':'Document : ')+curDocNum+' — FINI PLUS');
+    window.open('https://wa.me/?text='+msg,'_blank');
+    toast(T('waTip'));
+  },700);
+}
+
+/* ══ PWA INSTALL ══ */
+var deferredInstall=null;
+
+// Android/Chrome: intercept install prompt
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();
+  deferredInstall=e;
+  // Only show if not already installed
+  if(!window.matchMedia('(display-mode: standalone)').matches){
+    $('install-bar').classList.add('show');
+  }
+});
+
+// Hide banner once installed
+window.addEventListener('appinstalled',function(){
+  $('install-bar').classList.remove('show');
+  deferredInstall=null;
+});
+
+// iOS Safari detection — show manual guide
+(function(){
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  var isStandalone=('standalone' in window.navigator)&&window.navigator.standalone;
+  if(isIOS&&!isStandalone){
+    // Show iOS bar after app loads (slight delay)
+    document.addEventListener('DOMContentLoaded',function(){
+      setTimeout(function(){ var b=$('ios-bar'); if(b) b.classList.add('show'); },4000);
+    });
+  }
+})();
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',function(){
+
+  /* ── Intro screen ── */
+  function hideIntro(){
+    var intro=$('intro');
+    if(!intro||intro.style.display==='none') return;
+    intro.classList.add('out');
+    setTimeout(function(){
+      intro.style.display='none';
+      var sp=$('splash');
+      sp.style.display='flex';
+      sp.classList.add('show');
+    },700);
+  }
+
+  // Auto-hide after 3s
+  setTimeout(hideIntro, 3000);
+  // Failsafe: force skip after 4s no matter what
+  setTimeout(function(){
+    var intro=$('intro');
+    if(intro && intro.style.display !== 'none'){
+      intro.style.display='none';
+      var sp=$('splash');
+      sp.style.display='flex';
+      sp.classList.add('show');
+    }
+  }, 4200);
+  // Click/tap to skip intro
+  $('intro').addEventListener('click', hideIntro);
+
+  /* COMMENCER */
+  $('btn_start').addEventListener('click',function(){
+    var sp=$('splash');
+    sp.classList.add('out');
+    setTimeout(function(){
+      sp.style.display='none';
+      sp.classList.remove('show','out');
+      var app=$('app');
+      app.style.display='flex';
+      app.classList.add('show');
+      applyTr(); renderAll();
+    },600);
+  });
+
+  /* Lang toggle */
+  $('btn_lang').addEventListener('click',function(){ setLang(lang==='fr'?'ar':'fr'); });
+
+  /* Logout */
+  $('btn-logout').addEventListener('click',function(){
+    $('app').classList.remove('show'); $('app').style.display='none';
+    var sp=$('splash'); sp.style.display='flex'; sp.classList.add('show'); sp.classList.remove('out');
+  });
+
+  /* Bottom nav */
+  document.querySelectorAll('.bn-item').forEach(function(b){
+    b.addEventListener('click',function(){ goPage(this.dataset.page); });
+  });
+
+  /* Dashboard links */
+  $('qa-devis').addEventListener('click',function(){ goPage('devis'); setTimeout(function(){ openDocModal('devis'); },60); });
+  $('qa-fact').addEventListener('click',function(){ goPage('fact'); setTimeout(function(){ openDocModal('facture'); },60); });
+  $('see_all').addEventListener('click',function(){ goPage('devis'); });
+
+  /* New buttons */
+  $('btn-new-devis').addEventListener('click',function(){ openDocModal('devis'); });
+  $('btn-new-fact').addEventListener('click',function(){ openDocModal('facture'); });
+  $('btn-new-prod').addEventListener('click',openProdModal);
+
+  /* Doc modal */
+  $('close-doc').addEventListener('click',closeDocModal);
+  $('cancel-doc').addEventListener('click',closeDocModal);
+  $('save-doc').addEventListener('click',saveDoc);
+  $('btn-add-item').addEventListener('click',function(){
+    docItems.push({prodId:'',qty:1,pu:0,unite:'U'}); renderItems();
+  });
+
+  /* Prod modal */
+  $('close-prod').addEventListener('click',function(){ $('modal-prod').classList.remove('open'); });
+  $('cancel-prod').addEventListener('click',function(){ $('modal-prod').classList.remove('open'); });
+  $('save-prod').addEventListener('click',saveProd);
+
+  /* Settings */
+  $('btn-save-cfg').addEventListener('click',saveCfg);
+
+  /* Preview actions */
+  $('prev-close').addEventListener('click',function(){ $('preview-overlay').classList.remove('open'); });
+  $('prev-dl').addEventListener('click',function(){ generatePDF(function(pdf){ pdf.save((curDocNum||'document')+'.pdf'); toast(T('dlOk')); }); });
+  $('prev-wa').addEventListener('click',function(){
+    generatePDF(function(pdf){
+      var fname=(curDocNum||'document')+'.pdf';
+      var blob=pdf.output('blob');
+      var file=new File([blob],fname,{type:'application/pdf'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'FINI PLUS — '+curDocNum,text:curDocNum})
+        .then(function(){ toast(T('waOk')); })
+        .catch(function(e){ if(e.name!=='AbortError') fallbackWA(pdf,fname); });
+      } else { fallbackWA(pdf,fname); }
+    });
+  });
+  $('prev-print').addEventListener('click',function(){
+    var ct=$('preview-doc'); if(!ct) return;
+    var w=window.open('','_blank','width=830,height=960');
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box}body{margin:0;font-family:sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head><body>'+ct.innerHTML+'<scr'+'ipt>window.onload=function(){window.print()}<\/scr'+'ipt></body></html>');
+    w.document.close();
+  });
+
+  /* Install buttons */
+  $('install-btn').addEventListener('click',function(){
+    if(deferredInstall){
+      deferredInstall.prompt();
+      deferredInstall.userChoice.then(function(result){
+        $('install-bar').classList.remove('show');
+        deferredInstall=null;
+        if(result.outcome==='accepted') toast('✅ Application installée !');
+      });
+    }
+  });
+  $('install-dismiss').addEventListener('click',function(){ $('install-bar').classList.remove('show'); });
+  var iosD=$('ios-dismiss'); if(iosD) iosD.addEventListener('click',function(){ $('ios-bar').classList.remove('show'); });
+
+  /* Delegation for doc/prod actions */
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest('[data-ac]'); if(!btn) return;
+    var ac=btn.dataset.ac, i=parseInt(btn.dataset.i), t=btn.dataset.t;
+    if(ac==='pdf') doDownload(i,t);
+    else if(ac==='wa') doWA(i,t);
+    else if(ac==='view') previewDoc(i,t);
+    else if(ac==='del'){
+      if(!confirm(lang==='ar'?'هل أنت متأكد؟':'Confirmer ?')) return;
+      if(t==='devis') devis.splice(i,1); else factures.splice(i,1);
+      renderAll();
+    }
+    else if(ac==='editprod') editProd(i);
+    else if(ac==='delprod'){ if(!confirm('Supprimer ?')) return; produits.splice(i,1); renderProd(); }
+  });
+
+  /* Close overlays on backdrop tap */
+  ['modal-doc','modal-prod'].forEach(function(id){
+    $(id).addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
+  });
+
+  /* SW */
+  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
+
+  /* ── Calculator init (DOM ready) ── */
+  // Calc tabs
+  document.querySelectorAll('.calc-tab').forEach(function(tab){
+    tab.addEventListener('click',function(){
+      document.querySelectorAll('.calc-tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.calc-panel').forEach(function(p){ p.classList.remove('active'); });
+      this.classList.add('active');
+      var panel = document.getElementById('cp-'+this.dataset.ct);
+      if(panel) panel.classList.add('active');
+    });
+  });
+
+  // Toggle ouvertures
+  var clOuv = document.getElementById('cl-ouv');
+  if(clOuv) clOuv.addEventListener('change',function(){
+    document.getElementById('cl-ouv-fields').style.display = this.checked ? 'block' : 'none';
+  });
+
+  // Calc buttons
+  var bArm = document.getElementById('btn-calc-arm');
+  if(bArm) bArm.addEventListener('click', calcArmstrong);
+  var bBa = document.getElementById('btn-calc-ba');
+  if(bBa) bBa.addEventListener('click', calcBA13);
+  var bCl = document.getElementById('btn-calc-cl');
+  if(bCl) bCl.addEventListener('click', calcCloison);
+  var bDb = document.getElementById('btn-calc-db');
+  if(bDb) bDb.addEventListener('click', calcDoublage);
+
+  // Live surface bindings
+  bindSurf('arm-l','arm-w','arm-surf');
+  bindSurf('ba-l','ba-w','ba-surf');
+  bindSurf('cl-l','cl-h','cl-surf');
+  bindSurf('db-l','db-h','db-surf');
+
+/* ══════════════════════════════════════
+   CALCULATOR ENGINE
+══════════════════════════════════════ */
+
+function n$(id){ return parseFloat(document.getElementById(id).value)||0; }
+function el(id){ return document.getElementById(id); }
+function ceil(n){ return Math.ceil(n); }
+function round1(n){ return Math.round(n*10)/10; }
+
+// ── Live surface update ──
+function bindSurf(lId, wId, surfId){
+  function upd(){
+    var l=n$(lId), w=n$(wId);
+    el(surfId).textContent = (l>0&&w>0) ? (l*w).toFixed(2)+' m²' : '— m²';
+  }
+  el(lId).addEventListener('input',upd);
+  el(wId).addEventListener('input',upd);
+}
+
+// Calc tabs initialized in DOMContentLoaded
+
+// cl-ouv initialized in DOMContentLoaded
+
+// ─────────────────────────────────────
+// RESULT BUILDER
+// ─────────────────────────────────────
+function matIcon(type){
+  var icons = {
+    armstrong: {bg:'#EFF6FF',icon:'🟦'},
+    dalle:     {bg:'#EFF6FF',icon:'⬜'},
+    corniere:  {bg:'#F5F0FF',icon:'📐'},
+    suspente:  {bg:'#FFF0F0',icon:'🔩'},
+    rail:      {bg:'#FFF8EE',icon:'📏'},
+    montant:   {bg:'#F0FBF4',icon:'🪵'},
+    plaque:    {bg:'#F0FBF4',icon:'🟩'},
+    vis:       {bg:'#FFF0F0',icon:'🔩'},
+    bande:     {bg:'#F5FBFF',icon:'🪤'},
+    enduit:    {bg:'#FEF9E8',icon:'🪣'},
+    laine:     {bg:'#FFF8F0',icon:'🧶'},
+    cheville:  {bg:'#FFF0F0',icon:'⚙️'},
+    colle:     {bg:'#FEF9E8',icon:'🧴'},
+  };
+  var ic = icons[type]||{bg:'#F5F5F5',icon:'📦'};
+  return '<div class="mat-icon" style="background:'+ic.bg+'">'+ic.icon+'</div>';
+}
+
+function buildResults(title, surf, items, waste){
+  var html = '<div class="res-header"><div class="res-ht">'+title+'</div>'+
+    '<div class="res-surface">'+surf.toFixed(2)+' m²</div></div>';
+  items.forEach(function(item){
+    html += '<div class="mat-row">'+
+      matIcon(item.icon)+
+      '<div class="mat-info"><div class="mat-name">'+item.name+'</div>'+
+      (item.detail?'<div class="mat-detail">'+item.detail+'</div>':'')+
+      '</div>'+
+      '<div class="mat-qty">'+
+        '<div class="mat-num">'+item.qty+'</div>'+
+        '<div class="mat-unit">'+item.unit+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+  if(waste){
+    html += '<div class="waste-note">✅ Quantités incluant <strong>+10% de chute</strong> pour les coupes et pertes.</div>';
+  }
+  return html;
+}
+
+// ─────────────────────────────────────
+// 1. ARMSTRONG CALCULATOR
+// ─────────────────────────────────────
+function calcArmstrong(){
+  var L = n$('arm-l'), W = n$('arm-w');
+  if(!L||!W){ alert('Entrez les dimensions'); return; }
+  var waste = el('arm-waste').checked;
+  var F = waste ? 1.10 : 1.0;
+  var surf = L * W;
+  var perim = 2*(L+W);
+
+  // ARMSTRONG 60x60 grid
+  // Primary T-bars (longues): run across the width every 1.22m
+  var nbPrimaires = ceil(L / 1.22) + 1;
+  var longPrimaire = W; // each goes full width
+  var mlPrimaires  = ceil(nbPrimaires * longPrimaire * F);
+
+  // Secondary T-bars (courtes 0.61m): fill between primaries
+  var mlSecondaires = ceil((surf / 0.61) * F); // approx 1 per 0.61m²... 
+  // Better: nb rows of secondary = ceil(W/0.61), each row = nb primary intervals
+  var nbSecRows = ceil(W / 0.61);
+  var nbSecCols = ceil(L / 1.22);
+  var mlSec = ceil(nbSecRows * nbSecCols * 0.61 * F);
+
+  // Dalles 60x60
+  var nbDalles = ceil(surf / 0.36 * F);
+
+  // Cornière périmètre
+  var mlCorniere = ceil(perim * F);
+
+  // Suspentes (1 par 1.22m x 1.22m)
+  var nbSuspentes = ceil(surf / (1.22*1.22) * F);
+
+  // Chevilles et tiges
+  var nbChevilles = nbSuspentes;
+
+  var items = [
+    {icon:'armstrong', name:'Profilé T principal (T24)',  detail:'Longueur 3.60m – espacés 1.22m', qty:ceil(mlPrimaires/3.6),  unit:'barres'},
+    {icon:'armstrong', name:'Profilé T secondaire',       detail:'Longueur 1.22m – espacés 0.61m', qty:ceil(mlSec/1.22),      unit:'pièces'},
+    {icon:'dalle',     name:'Dalle Armstrong 60×60cm',    detail:'Surface unitaire 0.36 m²',        qty:nbDalles,              unit:'dalles'},
+    {icon:'corniere',  name:'Cornière périmètre',         detail:'Rail de finition L = '+round1(perim)+' ml', qty:ceil(mlCorniere/3), unit:'barres 3m'},
+    {icon:'suspente',  name:'Suspente + tige filetée',    detail:'1 suspente / 1.49 m²',            qty:nbSuspentes,           unit:'pièces'},
+    {icon:'cheville',  name:'Cheville + boulon',          detail:'Fixation au plafond',              qty:nbChevilles,           unit:'pièces'},
+  ];
+
+  var res = el('res-armstrong');
+  res.innerHTML = buildResults('Faux Plafond Armstrong', surf, items, waste);
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ─────────────────────────────────────
+// 2. PLAFOND BA13 CALCULATOR
+// ─────────────────────────────────────
+function calcBA13(){
+  var L = n$('ba-l'), W = n$('ba-w');
+  if(!L||!W){ alert('Entrez les dimensions'); return; }
+  var waste  = el('ba-waste').checked;
+  var double = el('ba-double').checked;
+  var laine  = el('ba-laine').checked;
+  var F = waste ? 1.10 : 1.0;
+  var surf = L * W;
+  var perim = 2*(L+W);
+  var faces = double ? 2 : 1;
+
+  // Plaques BA13 (2.50 x 1.20 = 3.00 m²)
+  var nbPlaques = ceil(surf / 3.0 * F) * faces;
+
+  // Rail U périmètre (en pourtour) + rail porteur tous les 60cm parallèle au grand côté
+  var nbRailsPorteurs = ceil(W / 0.60) + 1; // rails traversant la longueur
+  var mlRails = ceil((perim + nbRailsPorteurs * L) * F);
+  var nbRails3m = ceil(mlRails / 3.0);
+
+  // Montants Oméga 47 (perpendiculaires aux rails porteurs, tous les 60cm)
+  var nbOmega = ceil((L / 0.60) * (W + 1) * F);
+
+  // Suspentes (1 / 0.90m² pour BA13)
+  var nbSuspentes = ceil(surf / 0.90 * F);
+
+  // Vis TF 25mm : ~25 vis / m² / face
+  var nbVis = ceil(surf * 25 * faces * F);
+
+  // Bande à joint (1 ml / 1.20m de plaque = nb joints)
+  var mlBande = ceil(surf / 1.2 * F);
+
+  // Enduit (1.2 kg/m²)
+  var kgEnduit = ceil(surf * 1.2 * F);
+
+  var items = [
+    {icon:'plaque',   name:'Plaque BA13'+(laine?' (Hydrofuge)':(el('ba-type').value==='hum'?' Hydrofuge':'')), detail:'2.50×1.20m = 3 m² · '+faces+' face(s)', qty:nbPlaques, unit:'plaques'},
+    {icon:'rail',     name:'Rail F530 (profilé U)',  detail:'Périmètre + porteurs tous 60cm',  qty:nbRails3m,    unit:'barres 3m'},
+    {icon:'montant',  name:'Montant Oméga 47',        detail:'Espacement 60cm',                 qty:nbOmega,      unit:'pièces'},
+    {icon:'suspente', name:'Suspente métallique',     detail:'1 suspente / 0.90 m²',            qty:nbSuspentes,  unit:'pièces'},
+    {icon:'vis',      name:'Vis TF 25mm',             detail:'~25 vis / m²',                    qty:nbVis,        unit:'vis'},
+    {icon:'bande',    name:'Bande à joint',           detail:'Joints entre plaques',             qty:mlBande,      unit:'ml'},
+    {icon:'enduit',   name:'Enduit à joint',          detail:'1.2 kg / m²',                     qty:kgEnduit,     unit:'kg'},
+  ];
+  if(laine) items.push({icon:'laine', name:'Laine de verre', detail:'Entre ossature et maçonnerie', qty:ceil(surf*F), unit:'m²'});
+
+  var res = el('res-ba13plaf');
+  res.innerHTML = buildResults('Faux Plafond BA13', surf, items, waste);
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ─────────────────────────────────────
+// 3. CLOISON BA13 CALCULATOR
+// ─────────────────────────────────────
+function calcCloison(){
+  var L = n$('cl-l'), H = n$('cl-h');
+  if(!L||!H){ alert('Entrez les dimensions'); return; }
+  var waste = el('cl-waste').checked;
+  var laine = el('cl-laine').checked;
+  var hasOuv = el('cl-ouv').checked;
+  var F = waste ? 1.10 : 1.0;
+
+  // Deduct openings
+  var surfOuv = 0;
+  if(hasOuv){
+    var ow = n$('cl-ow'), oh = n$('cl-oh'), onb = parseInt(el('cl-onb').value)||1;
+    surfOuv = ow * oh * onb;
+  }
+  var surf = Math.max(0, L * H - surfOuv);
+  var surfBrut = L * H;
+
+  // Cloison = 2 faces de BA13
+  // Plaques BA13 (2.50 x 1.20 = 3.00 m²) × 2 faces
+  var nbPlaques = ceil(surf / 3.0 * F) * 2;
+
+  // Rails (profilé U) : haut + bas = 2 x L
+  var mlRails = ceil(L * 2 * F);
+  var nbRails3m = ceil(mlRails / 3.0);
+
+  // Montants : 1 tous les 60cm + 1 de chaque bout
+  var nbMontants = ceil(L / 0.60) + 1;
+  var montSize = el('cl-mont').value;
+  // Hauteur montant = H de la pièce
+  var nbMontantsTotal = ceil(nbMontants * F);
+
+  // Vis TF 25mm : ~25/m²/face × 2 faces
+  var nbVis = ceil(surf * 25 * 2 * F);
+
+  // Bande à joint
+  var mlBande = ceil(surf / 1.2 * F);
+
+  // Enduit
+  var kgEnduit = ceil(surf * 1.2 * F);
+
+  var items = [
+    {icon:'plaque',  name:'Plaque BA13',             detail:'2.50×1.20m = 3 m² · 2 faces',     qty:nbPlaques,       unit:'plaques'},
+    {icon:'rail',    name:'Rail U (haut + bas)',      detail:'Longueur '+round1(L)+' ml × 2',    qty:nbRails3m,       unit:'barres 3m'},
+    {icon:'montant', name:'Montant M'+montSize+' H'+round1(H)+'m', detail:'Espacement 60cm – '+nbMontantsTotal+' montants', qty:nbMontantsTotal, unit:'pièces'},
+    {icon:'vis',     name:'Vis TF 25mm',              detail:'~25 vis / m² / face',              qty:nbVis,           unit:'vis'},
+    {icon:'bande',   name:'Bande à joint',            detail:'Joints entre plaques',             qty:mlBande,         unit:'ml'},
+    {icon:'enduit',  name:'Enduit à joint',           detail:'1.2 kg / m²',                     qty:kgEnduit,        unit:'kg'},
+  ];
+  if(laine) items.splice(3,0,{icon:'laine', name:'Laine de verre '+montSize+'mm', detail:'Isolation acoustique / thermique', qty:ceil(surfBrut*F), unit:'m²'});
+
+  var res = el('res-cloison');
+  res.innerHTML = buildResults('Cloison BA13 (M'+montSize+')', surf, items, waste);
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ─────────────────────────────────────
+// 4. DOUBLAGE MURS BA13
+// ─────────────────────────────────────
+function calcDoublage(){
+  var L = n$('db-l'), H = n$('db-h');
+  if(!L||!H){ alert('Entrez les dimensions'); return; }
+  var waste = el('db-waste').checked;
+  var laine = el('db-laine').checked;
+  var F = waste ? 1.10 : 1.0;
+  var surf = L * H;
+  var montSize = el('db-mont').value;
+
+  // Doublage = 1 face BA13 sur ossature métallique collée ou fixée au mur
+  var nbPlaques = ceil(surf / 3.0 * F);
+
+  // Rails (haut + bas)
+  var mlRails = ceil(L * 2 * F);
+  var nbRails3m = ceil(mlRails / 3.0);
+
+  // Montants tous les 60cm
+  var nbMontants = ceil(ceil(L / 0.60 + 1) * F);
+
+  // Vis
+  var nbVis = ceil(surf * 25 * F);
+
+  // Colle si collé (option) – pas de toggle, on met
+  // Cheville Rawl + goujons muraux
+  var nbChevilles = ceil((nbMontants * ceil(H/0.60)) * F);
+
+  // Bande + enduit
+  var mlBande = ceil(surf / 1.2 * F);
+  var kgEnduit = ceil(surf * 1.2 * F);
+
+  var items = [
+    {icon:'plaque',   name:'Plaque BA13',                detail:'2.50×1.20m = 3 m² · 1 face',   qty:nbPlaques,   unit:'plaques'},
+    {icon:'rail',     name:'Rail U (haut + bas)',        detail:'Longueur '+round1(L)+' ml × 2', qty:nbRails3m,   unit:'barres 3m'},
+    {icon:'montant',  name:'Montant M'+montSize,         detail:'Espacement 60cm',               qty:nbMontants,  unit:'pièces'},
+    {icon:'cheville', name:'Cheville + vis de fixation', detail:'Fixation montants au mur',      qty:nbChevilles, unit:'pièces'},
+    {icon:'vis',      name:'Vis TF 25mm',                detail:'~25 vis / m²',                  qty:nbVis,       unit:'vis'},
+    {icon:'bande',    name:'Bande à joint',              detail:'Joints entre plaques',          qty:mlBande,     unit:'ml'},
+    {icon:'enduit',   name:'Enduit à joint',             detail:'1.2 kg / m²',                   qty:kgEnduit,    unit:'kg'},
+  ];
+  if(laine) items.splice(3,0,{icon:'laine', name:'Laine de roche '+montSize+'mm', detail:'Isolation thermique / acoustique', qty:ceil(surf*F), unit:'m²'});
+
+  var res = el('res-doublage');
+  res.innerHTML = buildResults('Doublage Mur BA13 (M'+montSize+')', surf, items, waste);
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// bindSurf initialized in DOMContentLoaded
+
+});
+
+
+</script>
+</body>
+</html>

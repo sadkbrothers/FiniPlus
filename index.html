@@ -1045,44 +1045,44 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
     <!-- CALCULATRICE -->
     <div id="p-calc" class="page">
       <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:14px">
-        🧮 Calculatrice Matériaux
+        <span id="ctr_calcH">🧮 Calculatrice Matériaux</span>
       </p>
 
       <!-- TYPE TABS -->
       <div class="calc-tabs">
-        <button class="calc-tab active" data-ct="armstrong">Armstrong</button>
-        <button class="calc-tab" data-ct="ba13plaf">Plafond BA13</button>
-        <button class="calc-tab" data-ct="cloison">Cloison</button>
-        <button class="calc-tab" data-ct="doublage">Doublage</button>
-        <button class="calc-tab" data-ct="beton">Béton</button>
-        <button class="calc-tab" data-ct="brique">Briques</button>
+        <button class="calc-tab active" data-ct="armstrong"><span id="ctr_ctArm">Armstrong</span></button>
+        <button class="calc-tab" data-ct="ba13plaf"><span id="ctr_ctBa">Plafond BA13</span></button>
+        <button class="calc-tab" data-ct="cloison"><span id="ctr_ctCl">Cloison</span></button>
+        <button class="calc-tab" data-ct="doublage"><span id="ctr_ctDb">Doublage</span></button>
+        <button class="calc-tab" data-ct="beton"><span id="ctr_ctBt">Béton</span></button>
+        <button class="calc-tab" data-ct="brique"><span id="ctr_ctBr">Briques</span></button>
       </div>
 
       <!-- ══ ARMSTRONG ══ -->
       <div class="calc-panel active" id="cp-armstrong">
         <div class="dim-card">
-          <div class="dim-title">📐 Dimensions de la pièce</div>
+          <div class="dim-title">📐 <span id="ctr_dimPiece">Dimensions de la pièce</span></div>
           <div class="dim-grid">
             <div class="dim-field">
-              <div class="dim-label">Longueur</div>
+              <div class="dim-label" data-ctr="cLon">Longueur</div>
               <input type="number" class="dim-input" id="arm-l" placeholder="5.40" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
             <div class="dim-field">
-              <div class="dim-label">Largeur</div>
+              <div class="dim-label" data-ctr="cLar">Largeur</div>
               <input type="number" class="dim-input" id="arm-w" placeholder="4.20" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
           </div>
           <div class="surface-badge">
-            <div><div class="sb-label">Surface calculée</div></div>
+            <div><div class="sb-label" data-ctr="cSurf">Surface calculée</div></div>
             <div class="sb-value" id="arm-surf">— m²</div>
           </div>
         </div>
         <div class="opts-card">
-          <div class="opts-title">⚙️ Options</div>
+          <div class="opts-title" data-ctr="cOpts">⚙️ Options</div>
           <div class="opt-row">
-            <div><div class="opt-name">Hauteur de suspension</div><div class="opt-sub">Distance dalle au vrai plafond</div></div>
+            <div><div class="opt-name" data-ctr="cHautSupp">Hauteur de suspension</div><div class="opt-sub" data-ctr="cHautSuppS">Distance dalle au vrai plafond</div></div>
             <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:90px" id="arm-hsusp">
               <option value="0.1">10 cm</option>
               <option value="0.2">20 cm</option>
@@ -1091,86 +1091,86 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
             </select>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Marge de chute (+10%)</div><div class="opt-sub">Coupes et pertes de matériaux</div></div>
+            <div><div class="opt-name" data-ctr="cMargChut">Marge de chute (+10%)</div><div class="opt-sub" data-ctr="cCoupes">Coupes et pertes de matériaux</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="arm-waste" checked><span class="toggle-btn"></span></label>
           </div>
         </div>
-        <button class="calc-btn" id="btn-calc-arm">⚡ Calculer les matériaux</button>
+        <button class="calc-btn" id="btn-calc-arm"><span data-ctr="cBtnCalc">⚡ Calculer les matériaux</span></button>
         <div class="results-card" id="res-armstrong"></div>
       </div>
 
       <!-- ══ PLAFOND BA13 ══ -->
       <div class="calc-panel" id="cp-ba13plaf">
         <div class="dim-card">
-          <div class="dim-title">📐 Dimensions de la pièce</div>
+          <div class="dim-title">📐 <span id="ctr_dimPiece">Dimensions de la pièce</span></div>
           <div class="dim-grid">
             <div class="dim-field">
-              <div class="dim-label">Longueur</div>
+              <div class="dim-label" data-ctr="cLon">Longueur</div>
               <input type="number" class="dim-input" id="ba-l" placeholder="5.40" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
             <div class="dim-field">
-              <div class="dim-label">Largeur</div>
+              <div class="dim-label" data-ctr="cLar">Largeur</div>
               <input type="number" class="dim-input" id="ba-w" placeholder="4.20" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
           </div>
           <div class="surface-badge">
-            <div><div class="sb-label">Surface calculée</div></div>
+            <div><div class="sb-label" data-ctr="cSurf">Surface calculée</div></div>
             <div class="sb-value" id="ba-surf">— m²</div>
           </div>
         </div>
         <div class="opts-card">
-          <div class="opts-title">⚙️ Options</div>
+          <div class="opts-title" data-ctr="cOpts">⚙️ Options</div>
           <div class="opt-row">
-            <div><div class="opt-name">Type de plaques</div></div>
+            <div><div class="opt-name" data-ctr="cTypePl">Type de plaques</div></div>
             <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:110px" id="ba-type">
               <option value="std">Standard BA13</option>
               <option value="hum">Hydrofuge (BA13H)</option>
             </select>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Double épaisseur</div><div class="opt-sub">2 couches de BA13</div></div>
+            <div><div class="opt-name" data-ctr="cDblEp">Double épaisseur</div><div class="opt-sub" data-ctr="cDblEpS">2 couches de BA13</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="ba-double"><span class="toggle-btn"></span></label>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Laine de verre (isolation)</div></div>
+            <div><div class="opt-name" data-ctr="cLaine">Laine de verre (isolation)</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="ba-laine"><span class="toggle-btn"></span></label>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Marge de chute (+10%)</div></div>
+            <div><div class="opt-name" data-ctr="cMargChut">Marge de chute (+10%)</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="ba-waste" checked><span class="toggle-btn"></span></label>
           </div>
         </div>
-        <button class="calc-btn" id="btn-calc-ba">⚡ Calculer les matériaux</button>
+        <button class="calc-btn" id="btn-calc-ba"><span data-ctr="cBtnCalc">⚡ Calculer les matériaux</span></button>
         <div class="results-card" id="res-ba13plaf"></div>
       </div>
 
       <!-- ══ CLOISON ══ -->
       <div class="calc-panel" id="cp-cloison">
         <div class="dim-card">
-          <div class="dim-title">📐 Dimensions de la cloison</div>
+          <div class="dim-title">📐 <span id="ctr_dimClois">Dimensions de la cloison</span></div>
           <div class="dim-grid">
             <div class="dim-field">
-              <div class="dim-label">Longueur</div>
+              <div class="dim-label" data-ctr="cLon">Longueur</div>
               <input type="number" class="dim-input" id="cl-l" placeholder="6.00" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
             <div class="dim-field">
-              <div class="dim-label">Hauteur</div>
+              <div class="dim-label" data-ctr="cHau">Hauteur</div>
               <input type="number" class="dim-input" id="cl-h" placeholder="2.70" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
           </div>
           <div class="surface-badge">
-            <div><div class="sb-label">Surface calculée</div></div>
+            <div><div class="sb-label" data-ctr="cSurf">Surface calculée</div></div>
             <div class="sb-value" id="cl-surf">— m²</div>
           </div>
         </div>
         <div class="opts-card">
-          <div class="opts-title">⚙️ Options</div>
+          <div class="opts-title" data-ctr="cOpts">⚙️ Options</div>
           <div class="opt-row">
-            <div><div class="opt-name">Type de montant</div></div>
+            <div><div class="opt-name" data-ctr="cTypeMo">Type de montant</div></div>
             <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:100px" id="cl-mont">
               <option value="48">Montant 48</option>
               <option value="70">Montant 70</option>
@@ -1178,11 +1178,11 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
             </select>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Laine de verre (isolation)</div><div class="opt-sub">Intercalée dans la cloison</div></div>
+            <div><div class="opt-name" data-ctr="cLaine">Laine de verre (isolation)</div><div class="opt-sub" data-ctr="cLaineClS">Intercalée dans la cloison</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="cl-laine"><span class="toggle-btn"></span></label>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Déduire ouvertures</div><div class="opt-sub">Portes / fenêtres</div></div>
+            <div><div class="opt-name" data-ctr="cDedOuv">Déduire ouvertures</div><div class="opt-sub" data-ctr="cDedOuvS">Portes / fenêtres</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="cl-ouv"><span class="toggle-btn"></span></label>
           </div>
           <div id="cl-ouv-fields" style="display:none;margin-top:8px;padding:10px;background:var(--paper);border-radius:8px">
@@ -1199,91 +1199,91 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
                 <div class="dim-unit" style="color:var(--text2)">m</div>
               </div>
             </div>
-            <div style="font-size:11px;color:var(--text2);margin-top:8px">Nombre d'ouvertures : <input type="number" id="cl-onb" value="1" min="0" style="width:50px;padding:4px;border:1.5px solid var(--border);border-radius:4px;font-size:13px"></div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px"><span data-ctr="cNbOuv">Nombre d'ouvertures :</span> <input type="number" id="cl-onb" value="1" min="0" style="width:50px;padding:4px;border:1.5px solid var(--border);border-radius:4px;font-size:13px"></div>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Marge de chute (+10%)</div></div>
+            <div><div class="opt-name" data-ctr="cMargChut">Marge de chute (+10%)</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="cl-waste" checked><span class="toggle-btn"></span></label>
           </div>
         </div>
-        <button class="calc-btn" id="btn-calc-cl">⚡ Calculer les matériaux</button>
+        <button class="calc-btn" id="btn-calc-cl"><span data-ctr="cBtnCalc">⚡ Calculer les matériaux</span></button>
         <div class="results-card" id="res-cloison"></div>
       </div>
 
       <!-- ══ DOUBLAGE ══ -->
       <div class="calc-panel" id="cp-doublage">
         <div class="dim-card">
-          <div class="dim-title">📐 Dimensions du doublage</div>
+          <div class="dim-title">📐 <span id="ctr_dimDoub">Dimensions du doublage</span></div>
           <div class="dim-grid">
             <div class="dim-field">
               <div class="dim-label">Longueur mur</div>
               <input type="number" class="dim-input" id="db-l" placeholder="5.00" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
             <div class="dim-field">
               <div class="dim-label">Hauteur mur</div>
               <input type="number" class="dim-input" id="db-h" placeholder="2.70" step="0.01" min="0">
-              <div class="dim-unit">mètres</div>
+              <div class="dim-unit" data-ctr="cMetre">mètres</div>
             </div>
           </div>
           <div class="surface-badge">
-            <div><div class="sb-label">Surface calculée</div></div>
+            <div><div class="sb-label" data-ctr="cSurf">Surface calculée</div></div>
             <div class="sb-value" id="db-surf">— m²</div>
           </div>
         </div>
         <div class="opts-card">
-          <div class="opts-title">⚙️ Options</div>
+          <div class="opts-title" data-ctr="cOpts">⚙️ Options</div>
           <div class="opt-row">
-            <div><div class="opt-name">Type de montant</div></div>
+            <div><div class="opt-name" data-ctr="cTypeMo">Type de montant</div></div>
             <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:100px" id="db-mont">
               <option value="48">Montant 48</option>
               <option value="70" selected>Montant 70</option>
             </select>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Isolation thermique</div><div class="opt-sub">Laine de roche / verre</div></div>
+            <div><div class="opt-name" data-ctr="cIsolT">Isolation thermique</div><div class="opt-sub" data-ctr="cLaineR">Laine de roche / verre</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="db-laine"><span class="toggle-btn"></span></label>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Marge de chute (+10%)</div></div>
+            <div><div class="opt-name" data-ctr="cMargChut">Marge de chute (+10%)</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="db-waste" checked><span class="toggle-btn"></span></label>
           </div>
         </div>
-        <button class="calc-btn" id="btn-calc-db">⚡ Calculer les matériaux</button>
+        <button class="calc-btn" id="btn-calc-db"><span data-ctr="cBtnCalc">⚡ Calculer les matériaux</span></button>
         <div class="results-card" id="res-doublage"></div>
       </div>
 
       <!-- ══ BÉTON ══ -->
       <div class="calc-panel" id="cp-beton">
         <div class="dim-card">
-          <div class="dim-title">🪨 Volume de béton</div>
+          <div class="dim-title">🪨 <span id="ctr_dimBeton">Volume de béton</span></div>
           <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:14px;line-height:1.6">Calcul du volume (m³) et des composants nécessaires.</div>
           <div class="dim-grid" style="grid-template-columns:1fr 1fr 1fr">
             <div class="dim-field">
-              <div class="dim-label">Longueur</div>
+              <div class="dim-label" data-ctr="cLon">Longueur</div>
               <input type="number" class="dim-input" id="bt-l" placeholder="5.00" step="0.01" min="0">
               <div class="dim-unit">m</div>
             </div>
             <div class="dim-field">
-              <div class="dim-label">Largeur</div>
+              <div class="dim-label" data-ctr="cLar">Largeur</div>
               <input type="number" class="dim-input" id="bt-w" placeholder="3.00" step="0.01" min="0">
               <div class="dim-unit">m</div>
             </div>
             <div class="dim-field">
-              <div class="dim-label">Épaisseur</div>
+              <div class="dim-label" data-ctr="cEpa">Épaisseur</div>
               <input type="number" class="dim-input" id="bt-e" placeholder="0.15" step="0.01" min="0">
               <div class="dim-unit">m</div>
             </div>
           </div>
           <div class="surface-badge" style="margin-top:14px">
-            <div><div class="sb-label">Volume calculé</div></div>
+            <div><div class="sb-label" data-ctr="cVol">Volume calculé</div></div>
             <div class="sb-value" id="bt-vol">— m³</div>
           </div>
         </div>
         <div class="opts-card">
-          <div class="opts-title">⚙️ Classe de résistance</div>
+          <div class="opts-title" data-ctr="cClassB">⚙️ Dosage béton</div>
           <div class="opt-row">
-            <div><div class="opt-name">Dosage béton</div><div class="opt-sub">Résistance requise</div></div>
+            <div><div class="opt-name" data-ctr="cClassB">Dosage béton</div><div class="opt-sub" data-ctr="cClassBS">Résistance requise</div></div>
             <select style="font-size:11px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:150px" id="bt-dosage">
               <option value="200">B200 — Sol / Trottoir</option>
               <option value="250" selected>B250 — Dalle / Poteau</option>
@@ -1292,25 +1292,25 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
             </select>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Marge gâchage (+5%)</div></div>
+            <div><div class="opt-name" data-ctr="cMargGach">Marge gâchage (+5%)</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="bt-waste" checked><span class="toggle-btn"></span></label>
           </div>
         </div>
         <div style="background:rgba(26,90,158,.08);border:1px solid rgba(26,90,158,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:var(--text2);line-height:1.9">
-          <strong style="color:var(--blue);display:block;margin-bottom:4px">Dosages standards / m³</strong>
+          <strong style="color:var(--blue);display:block;margin-bottom:4px" data-ctr="cDosTitle">Dosages standards / m³</strong>
           B200 : 250 kg ciment · 400 kg sable · 800 kg gravier · 175 L eau<br>
           B250 : 300 kg ciment · 400 kg sable · 800 kg gravier · 180 L eau<br>
           B300 : 350 kg ciment · 400 kg sable · 800 kg gravier · 185 L eau<br>
           B350 : 400 kg ciment · 380 kg sable · 780 kg gravier · 190 L eau
         </div>
-        <button class="calc-btn" id="btn-calc-bt" style="background:linear-gradient(135deg,#4A5568,#2D3748)">🪨 Calculer le béton</button>
+        <button class="calc-btn" id="btn-calc-bt" style="background:linear-gradient(135deg,#4A5568,#2D3748)"><span data-ctr="cBtnBeton">🪨 Calculer le béton</span></button>
         <div class="results-card" id="res-beton"></div>
       </div>
 
       <!-- ══ BRIQUES / PARPAINGS ══ -->
       <div class="calc-panel" id="cp-brique">
         <div class="dim-card">
-          <div class="dim-title">🧱 Mur en briques / parpaings</div>
+          <div class="dim-title">🧱 <span id="ctr_dimBriq">Mur en briques / parpaings</span></div>
           <div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:14px;line-height:1.6">Nombre de briques et mortier pour un mur.</div>
           <div class="dim-grid">
             <div class="dim-field">
@@ -1325,14 +1325,14 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
             </div>
           </div>
           <div class="surface-badge">
-            <div><div class="sb-label">Surface du mur</div></div>
+            <div><div class="sb-label" data-ctr="cSurfM">Surface du mur</div></div>
             <div class="sb-value" id="br-surf">— m²</div>
           </div>
         </div>
         <div class="opts-card">
-          <div class="opts-title">🧱 Format de la brique</div>
+          <div class="opts-title" data-ctr="cFmtBr">🧱 Format de la brique</div>
           <div class="opt-row">
-            <div><div class="opt-name">Format standard</div><div class="opt-sub">Ou entrez manuellement</div></div>
+            <div><div class="opt-name">Format standard</div><div class="opt-sub" data-ctr="cFmtBrP">Ou entrez manuellement</div></div>
             <select style="font-size:11px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:165px" id="br-preset">
               <option value="">— Personnalisé —</option>
               <option value="25,12,6">Brique 25×12×6 cm</option>
@@ -1345,27 +1345,27 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
             </select>
           </div>
           <div style="margin-top:10px">
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:8px">Dimensions brique (cm)</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:8px" data-ctr="cDimBr">Dimensions brique (cm)</div>
             <div class="dim-grid" style="grid-template-columns:1fr 1fr 1fr">
               <div class="dim-field">
-                <div class="dim-label" style="color:var(--text2)">Longueur</div>
+                <div class="dim-label" style="color:var(--text2)" data-ctr="cLon">Longueur</div>
                 <input type="number" class="dim-input" id="br-bl" placeholder="25" step="0.5" min="1" style="background:var(--border);color:var(--ink);font-size:16px">
                 <div class="dim-unit" style="color:var(--text2)">cm</div>
               </div>
               <div class="dim-field">
-                <div class="dim-label" style="color:var(--text2)">Largeur</div>
+                <div class="dim-label" style="color:var(--text2)" data-ctr="cLar">Largeur</div>
                 <input type="number" class="dim-input" id="br-bw" placeholder="12" step="0.5" min="1" style="background:var(--border);color:var(--ink);font-size:16px">
                 <div class="dim-unit" style="color:var(--text2)">cm</div>
               </div>
               <div class="dim-field">
-                <div class="dim-label" style="color:var(--text2)">Hauteur</div>
+                <div class="dim-label" style="color:var(--text2)" data-ctr="cHau">Hauteur</div>
                 <input type="number" class="dim-input" id="br-bh" placeholder="6" step="0.5" min="1" style="background:var(--border);color:var(--ink);font-size:16px">
                 <div class="dim-unit" style="color:var(--text2)">cm</div>
               </div>
             </div>
           </div>
           <div class="opt-row" style="margin-top:10px">
-            <div><div class="opt-name">Joint de mortier</div></div>
+            <div><div class="opt-name" data-ctr="cJoint">Joint de mortier</div></div>
             <select style="font-size:12px;padding:6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;width:80px" id="br-joint">
               <option value="0.8">0.8 cm</option>
               <option value="1" selected>1 cm</option>
@@ -1374,31 +1374,31 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
             </select>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Déduire ouvertures</div><div class="opt-sub">Portes / fenêtres</div></div>
+            <div><div class="opt-name" data-ctr="cDedOuv">Déduire ouvertures</div><div class="opt-sub" data-ctr="cDedOuvS">Portes / fenêtres</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="br-ouv"><span class="toggle-btn"></span></label>
           </div>
           <div id="br-ouv-fields" style="display:none;margin-top:8px;padding:10px;background:var(--paper);border-radius:8px">
             <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Dimensions ouvertures</div>
             <div class="dim-grid">
               <div class="dim-field">
-                <div class="dim-label" style="color:var(--text2)">Largeur</div>
+                <div class="dim-label" style="color:var(--text2)" data-ctr="cLar">Largeur</div>
                 <input type="number" class="dim-input" id="br-ow" placeholder="0.90" step="0.01" style="background:var(--border);color:var(--ink);font-size:14px">
                 <div class="dim-unit" style="color:var(--text2)">m</div>
               </div>
               <div class="dim-field">
-                <div class="dim-label" style="color:var(--text2)">Hauteur</div>
+                <div class="dim-label" style="color:var(--text2)" data-ctr="cHau">Hauteur</div>
                 <input type="number" class="dim-input" id="br-oh" placeholder="2.10" step="0.01" style="background:var(--border);color:var(--ink);font-size:14px">
                 <div class="dim-unit" style="color:var(--text2)">m</div>
               </div>
             </div>
-            <div style="font-size:11px;color:var(--text2);margin-top:8px">Nombre : <input type="number" id="br-onb" value="1" min="1" style="width:50px;padding:4px;border:1.5px solid var(--border);border-radius:4px;font-size:13px"></div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px"><span data-ctr="cNbBr">Nombre :</span> <input type="number" id="br-onb" value="1" min="1" style="width:50px;padding:4px;border:1.5px solid var(--border);border-radius:4px;font-size:13px"></div>
           </div>
           <div class="opt-row">
-            <div><div class="opt-name">Marge de casse (+10%)</div><div class="opt-sub">Coupes et pertes</div></div>
+            <div><div class="opt-name" data-ctr="cMargCasse">Marge de casse (+10%)</div><div class="opt-sub" data-ctr="cCoupes">Coupes et pertes</div></div>
             <label class="toggle-wrap"><input type="checkbox" class="toggle" id="br-waste" checked><span class="toggle-btn"></span></label>
           </div>
         </div>
-        <button class="calc-btn" id="btn-calc-br" style="background:linear-gradient(135deg,#C05621,#9C4221)">🧱 Calculer les briques</button>
+        <button class="calc-btn" id="btn-calc-br" style="background:linear-gradient(135deg,#C05621,#9C4221)"><span data-ctr="cBtnBrique">🧱 Calculer les briques</span></button>
         <div class="results-card" id="res-brique"></div>
       </div>
 
@@ -1579,7 +1579,30 @@ var TR = {
     soc:'Informations Société', savedOk:'✅ Enregistré !',
     qaD:'Nouveau Devis', qaF:'Nouvelle Facture',
     logout:'Retour accueil', billTo:'Client',
-    dlOk:'✅ PDF téléchargé !', waOk:'✅ Partagé !', waTip:'📥 PDF téléchargé – joindre dans WhatsApp'
+    dlOk:'✅ PDF téléchargé !', waOk:'✅ Partagé !', waTip:'📥 PDF téléchargé – joindre dans WhatsApp',
+    calcNav:'Calcul', calcH:'🧮 Calculatrice Matériaux',
+    ctArm:'Armstrong', ctBa:'Plafond BA13', ctCl:'Cloison', ctDb:'Doublage', ctBt:'Béton', ctBr:'Briques',
+    cLon:'Longueur', cLar:'Largeur', cHau:'Hauteur', cEpa:'Épaisseur', cMetre:'mètres',
+    cSurf:'Surface calculée', cSurfM:'Surface du mur', cVol:'Volume calculé',
+    cOpts:'⚙️ Options',
+    cHautSupp:'Hauteur de suspension', cHautSuppS:'Distance dalle au vrai plafond',
+    cMargChut:'Marge de chute (+10%)', cMargCasse:'Marge de casse (+10%)', cMargGach:'Marge gâchage (+5%)',
+    cCoupes:'Coupes et pertes', cPertes:'Pertes et ajustements',
+    cDblEp:'Double épaisseur', cDblEpS:'2 couches de BA13',
+    cLaine:'Laine de verre (isolation)', cLaineS:'Entre ossature et maçonnerie',
+    cLaineCl:'Laine de verre (isolation)', cLaineClS:'Intercalée dans la cloison',
+    cTypePl:'Type de plaques', cTypeMo:'Type de montant',
+    cDedOuv:'Déduire ouvertures', cDedOuvS:'Portes / fenêtres',
+    cLrgOuv:'Largeur', cHtOuv:'Hauteur', cNbOuv:"Nombre d'ouvertures :",
+    cIsolT:'Isolation thermique', cLaineR:'Laine de roche / verre',
+    cClassB:'Dosage béton', cClassBS:'Résistance requise', cDosTitle:'Dosages standards / m³',
+    cFmtBr:'Format de la brique', cFmtBrS:'Format standard', cFmtBrP:'Ou entrez manuellement',
+    cDimBr:'Dimensions brique (cm)', cJoint:'Joint de mortier', cJointS:'Épaisseur standard 1 cm',
+    cNbBr:'Nombre :', cMargBr:'Marge de casse (+10%)', cMargBrS:'Coupes et pertes',
+    cBtnCalc:'⚡ Calculer les matériaux', cBtnBeton:'🪨 Calculer le béton', cBtnBrique:'🧱 Calculer les briques',
+    cDimPiece:'Dimensions de la pièce', cDimMur:'Dimensions du mur',
+    cDimClois:'Dimensions de la cloison', cDimDoub:'Dimensions du doublage',
+    cDimBeton:'Volume de béton', cDimBrique:'Mur en briques / parpaings'
   },
   ar:{
     dash:'الرئيسية', devis:'العروض', fact:'الفواتير', prod:'المنتجات', param:'الإعدادات',
@@ -1598,7 +1621,30 @@ var TR = {
     soc:'معلومات الشركة', savedOk:'✅ تم الحفظ !',
     qaD:'عرض سعر جديد', qaF:'فاتورة جديدة',
     logout:'العودة للرئيسية', billTo:'العميل',
-    dlOk:'✅ تم تنزيل PDF', waOk:'✅ تمت المشاركة', waTip:'📥 تم تنزيل PDF – أرفقه في واتساب'
+    dlOk:'✅ تم تنزيل PDF', waOk:'✅ تمت المشاركة', waTip:'📥 تم تنزيل PDF – أرفقه في واتساب',
+    calcNav:'حساب', calcH:'🧮 حاسبة المواد',
+    ctArm:'أرمسترونج', ctBa:'سقف BA13', ctCl:'جدار فاصل', ctDb:'تغليف جدار', ctBt:'خرسانة', ctBr:'طابوق',
+    cLon:'الطول', cLar:'العرض', cHau:'الارتفاع', cEpa:'السُّمك', cMetre:'متر',
+    cSurf:'المساحة المحسوبة', cSurfM:'مساحة الجدار', cVol:'الحجم المحسوب',
+    cOpts:'⚙️ خيارات',
+    cHautSupp:'ارتفاع التعليق', cHautSuppS:'المسافة بين الدالة والسقف الأصلي',
+    cMargChut:'هامش الكسر (+10%)', cMargCasse:'هامش الكسر (+10%)', cMargGach:'هامش الصب (+5%)',
+    cCoupes:'قطع وفاقد', cPertes:'فاقد وتعديلات',
+    cDblEp:'طبقة مزدوجة', cDblEpS:'طبقتان من BA13',
+    cLaine:'لين دو فار (عزل)', cLaineS:'بين الهيكل والجدار',
+    cLaineCl:'لين دو فار (عزل)', cLaineClS:'داخل الجدار الفاصل',
+    cTypePl:'نوع الألواح', cTypeMo:'نوع المونتان',
+    cDedOuv:'طرح الفتحات', cDedOuvS:'أبواب / نوافذ',
+    cLrgOuv:'العرض', cHtOuv:'الارتفاع', cNbOuv:'عدد الفتحات :',
+    cIsolT:'عزل حراري', cLaineR:'لين دو روش / فار',
+    cClassB:'تركيبة الخرسانة', cClassBS:'درجة المقاومة', cDosTitle:'التركيبات القياسية / م³',
+    cFmtBr:'مقاس الطابوقة', cFmtBrS:'مقاس قياسي', cFmtBrP:'أو أدخل يدوياً',
+    cDimBr:'أبعاد الطابوقة (سم)', cJoint:'مفصل الملاط', cJointS:'السُّمك القياسي 1 سم',
+    cNbBr:'العدد :', cMargBr:'هامش الكسر (+10%)', cMargBrS:'قطع وفاقد',
+    cBtnCalc:'⚡ احسب المواد', cBtnBeton:'🪨 احسب الخرسانة', cBtnBrique:'🧱 احسب الطابوق',
+    cDimPiece:'أبعاد الغرفة', cDimMur:'أبعاد الجدار',
+    cDimClois:'أبعاد الجدار الفاصل', cDimDoub:'أبعاد التغليف',
+    cDimBeton:'حجم الخرسانة', cDimBrique:'جدار بالطابوق / البريكو'
   }
 };
 function T(k){ return TR[lang][k]||k; }
@@ -1643,6 +1689,21 @@ function applyTr(){
   st('cfg_soc',T('soc')); st('bl_save',T('save'));
   st('bl_logout',T('logout'));
   st('pr_back',T('back')); st('pr_dl',T('dl')); st('pr_wa',T('wa'));
+  // ── Calculator labels ──
+  st('bn_calc', T('calcNav'));
+  st('ctr_calcH', T('calcH'));
+  st('ctr_ctArm', T('ctArm')); st('ctr_ctBa', T('ctBa')); st('ctr_ctCl', T('ctCl'));
+  st('ctr_ctDb', T('ctDb'));   st('ctr_ctBt', T('ctBt')); st('ctr_ctBr', T('ctBr'));
+  // dim-title spans
+  st('ctr_dimPiece', T('cDimPiece')); st('ctr_dimMur', T('cDimMur'));
+  st('ctr_dimClois', T('cDimClois')); st('ctr_dimDoub', T('cDimDoub'));
+  st('ctr_dimBeton', T('cDimBeton')); st('ctr_dimBriq', T('cDimBrique'));
+  // All data-ctr elements
+  document.querySelectorAll('[data-ctr]').forEach(function(el){
+    var k = el.getAttribute('data-ctr');
+    var v = TR[lang] && TR[lang][k];
+    if(v !== undefined) el.textContent = v;
+  });
 }
 
 /* ══ NAV ══ */

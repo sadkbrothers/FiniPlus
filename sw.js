@@ -1,4 +1,4 @@
-const CACHE = 'finiplus-v7';
+const CACHE = 'finiplus-v9';
 
 const ASSETS = [
   './',

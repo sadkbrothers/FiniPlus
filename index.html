@@ -859,6 +859,31 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
 .ic-beton_eau  { background: #EFF8FF; }
 .ic-brique     { background: #FFF0E8; }
 
+
+/* ── Company Switcher ── */
+.co-switcher {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.06); border-radius: 20px;
+  padding: 3px 4px; border: 1px solid rgba(255,255,255,.1);
+}
+.co-btn {
+  min-width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer;
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,.5);
+  background: transparent; transition: all .2s; display: flex;
+  align-items: center; justify-content: center; padding: 0 8px;
+  white-space: nowrap; border-radius: 14px;
+}
+.co-btn.active {
+  background: var(--gold); color: #0B1A2E;
+  border-color: var(--gold2); font-weight: 800;
+}
+.co-btn:not(.active):hover { color: rgba(255,255,255,.8); }
+
+/* ── Theme colors per company ── */
+.theme-1 {}
+.theme-2 { --doc-accent: #1A6B3C; --doc-header: #1A3A1A; }
+.theme-3 { --doc-accent: #7B2D00; --doc-header: #3A1A00; }
 </style>
 </head>
 <body>
@@ -961,7 +986,7 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
       </svg>
       <div class="tb-name">FINI <em>PLUS</em></div>
     </div>
-    <div class="tb-right">
+    <div class="tb-right" style="display:flex;align-items:center;gap:8px">
       <button id="btn_lang" class="btn btn-ghost btn-sm">🌐 <span id="lbl_lang">AR</span></button>
     </div>
   </div>
@@ -1017,39 +1042,91 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
     <!-- PARAMETRES -->
     <div id="p-param" class="page">
       <p style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:14px" id="p_param_title">Paramètres</p>
-      <div class="cfg-card">
-        <div class="cfg-title" id="cfg_soc">Informations Société</div>
-        <div class="fgrid">
-          <!-- Logo upload -->
-          <div class="fg full">
-            <label class="flabel">Logo de l'entreprise</label>
-            <div id="logo-preview-wrap" style="margin-bottom:8px;display:none">
-              <img id="logo-preview-img" style="max-height:80px;max-width:200px;border-radius:6px;border:1px solid var(--border);padding:4px;background:#fff">
-              <button onclick="removeLogo()" style="margin-left:8px;font-size:11px;color:#c00;background:none;border:none;cursor:pointer;vertical-align:top">✕ Supprimer</button>
+
+      <!-- Company tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;background:var(--border);border-radius:12px;padding:4px">
+        <button class="cfg-co-tab active" id="cfg-tab-0" onclick="openCfgTab(0)"
+          style="flex:1;padding:9px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:var(--card);color:var(--ink);transition:all .2s">
+          🏢 Société 1
+        </button>
+        <button class="cfg-co-tab" id="cfg-tab-1" onclick="openCfgTab(1)"
+          style="flex:1;padding:9px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text2);transition:all .2s">
+          🏢 Société 2
+        </button>
+        <button class="cfg-co-tab" id="cfg-tab-2" onclick="openCfgTab(2)"
+          style="flex:1;padding:9px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text2);transition:all .2s">
+          🏢 Société 3
+        </button>
+      </div>
+
+      <div id="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-title" id="cfg_soc">Informations Société</div>
+
+          <!-- Modèle de document -->
+          <div style="margin-bottom:14px;padding:12px;background:var(--paper);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Modèle de document</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="theme-selector">
+              <div class="theme-card" id="th-1" onclick="selectTheme(1)"
+                style="border:2px solid var(--gold);border-radius:8px;padding:8px;cursor:pointer;text-align:center">
+                <div style="height:36px;background:linear-gradient(135deg,#0B1A2E,#1A3A6E);border-radius:5px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">
+                  <div style="width:60%;height:3px;background:#C9A030;border-radius:2px"></div>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:var(--ink)">Bleu Royal</div>
+                <div style="font-size:9px;color:var(--text2)">Classique</div>
+              </div>
+              <div class="theme-card" id="th-2" onclick="selectTheme(2)"
+                style="border:2px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;text-align:center">
+                <div style="height:36px;background:linear-gradient(135deg,#1A4731,#0D2B1E);border-radius:5px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">
+                  <div style="width:60%;height:3px;background:#4CAF50;border-radius:2px"></div>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:var(--ink)">Vert Prestige</div>
+                <div style="font-size:9px;color:var(--text2)">Moderne</div>
+              </div>
+              <div class="theme-card" id="th-3" onclick="selectTheme(3)"
+                style="border:2px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;text-align:center">
+                <div style="height:36px;background:linear-gradient(135deg,#5C1A00,#3A1000);border-radius:5px;margin-bottom:6px;display:flex;align-items:center;justify-content:center">
+                  <div style="width:60%;height:3px;background:#FF8C00;border-radius:2px"></div>
+                </div>
+                <div style="font-size:10px;font-weight:700;color:var(--ink)">Bronze Élite</div>
+                <div style="font-size:9px;color:var(--text2)">Premium</div>
+              </div>
             </div>
-            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:var(--border);border-radius:8px;padding:9px 14px;font-size:12px;font-weight:600;color:var(--ink)">
-              📷 Choisir une image
-              <input type="file" id="cfg_logo_file" accept="image/*" style="display:none">
-            </label>
-            <div style="font-size:10px;color:var(--text2);margin-top:5px">PNG / JPG — apparaîtra en haut de la facture</div>
           </div>
-          <div class="fg full"><label class="flabel">Nom de la société</label><input id="cfg_name" placeholder="Ex: MON ENTREPRISE SARL"></div>
-          <div class="fg full"><label class="flabel">Adresse</label><input id="cfg_addr" placeholder="Ex: 12 Rue Hassan II, Meknès"></div>
-          <div class="fg"><label class="flabel">Téléphone</label><input id="cfg_tel" placeholder="+212 6XX-XXXXXX"></div>
-          <div class="fg"><label class="flabel">Email</label><input id="cfg_email" placeholder="contact@entreprise.ma"></div>
-          <div class="fg"><label class="flabel">TVA %</label><input type="number" id="cfg_tva" value="20"></div>
-          <div class="fg"><label class="flabel">ICE</label><input id="cfg_ice" placeholder="000000000000000"></div>
-          <div class="fg full"><label class="flabel">RC / Pat / CNSS</label><input id="cfg_rc" placeholder="RC / Pat / CNSS"></div>
-          <div class="fg"><label class="flabel">Capital</label><input id="cfg_capital" placeholder="Ex: 100 000,00 DHS"></div>
-          <div class="fg full"><label class="flabel">Slogan</label><input id="cfg_slogan" placeholder="Votre slogan ici..."></div>
-        </div>
-        <div style="margin-top:12px;">
-          <button id="btn-save-cfg" class="btn btn-ink">💾 <span id="bl_save">Enregistrer</span></button>
+
+          <div class="fgrid">
+            <!-- Logo upload -->
+            <div class="fg full">
+              <label class="flabel">Logo de l'entreprise</label>
+              <div id="logo-preview-wrap" style="margin-bottom:8px;display:none">
+                <img id="logo-preview-img" style="max-height:80px;max-width:200px;border-radius:6px;border:1px solid var(--border);padding:4px;background:#fff">
+                <button onclick="removeLogo()" style="margin-left:8px;font-size:11px;color:#c00;background:none;border:none;cursor:pointer;vertical-align:top">✕ Supprimer</button>
+              </div>
+              <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:var(--border);border-radius:8px;padding:9px 14px;font-size:12px;font-weight:600;color:var(--ink)">
+                📷 Choisir une image
+                <input type="file" id="cfg_logo_file" accept="image/*" style="display:none">
+              </label>
+              <div style="font-size:10px;color:var(--text2);margin-top:5px">PNG / JPG — apparaîtra en haut de la facture</div>
+            </div>
+            <div class="fg full"><label class="flabel">Nom de la société</label><input id="cfg_name" placeholder="Ex: MON ENTREPRISE SARL"></div>
+            <div class="fg full"><label class="flabel">Adresse</label><input id="cfg_addr" placeholder="Ex: 12 Rue Hassan II, Meknès"></div>
+            <div class="fg"><label class="flabel">Téléphone</label><input id="cfg_tel" placeholder="+212 6XX-XXXXXX"></div>
+            <div class="fg"><label class="flabel">Email</label><input id="cfg_email" placeholder="contact@entreprise.ma"></div>
+            <div class="fg"><label class="flabel">TVA %</label><input type="number" id="cfg_tva" value="20"></div>
+            <div class="fg"><label class="flabel">ICE</label><input id="cfg_ice" placeholder="000000000000000"></div>
+            <div class="fg full"><label class="flabel">RC / Pat / CNSS</label><input id="cfg_rc" placeholder="RC / Pat / CNSS"></div>
+            <div class="fg"><label class="flabel">Capital</label><input id="cfg_capital" placeholder="Ex: 100 000,00 DHS"></div>
+            <div class="fg full"><label class="flabel">Slogan</label><input id="cfg_slogan" placeholder="Votre slogan ici..."></div>
+          </div>
+          <div style="margin-top:12px;">
+            <button id="btn-save-cfg" class="btn btn-ink">💾 <span id="bl_save">Enregistrer</span></button>
+          </div>
         </div>
       </div>
+
       <div class="cfg-card">
         <div class="cfg-title">Application</div>
-        <p style="font-size:13px;color:var(--text2);line-height:1.8">FINI PLUS v4.0 · PWA Ready<br>Fonctionne hors-ligne · Made by MOHAMED SADK</p>
+        <p style="font-size:13px;color:var(--text2);line-height:1.8">FINI PLUS v7.0 · PWA Ready<br>Fonctionne hors-ligne · Made by MOHAMED SADK</p>
         <button id="btn-logout" class="btn btn-ghost btn-sm" style="margin-top:12px">← <span id="bl_logout">Retour accueil</span></button>
       </div>
     </div>
@@ -1454,6 +1531,32 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
       <button class="mclose" id="close-doc">✕</button>
     </div>
     <div class="mbody">
+
+      <!-- ── Company Picker ── -->
+      <div id="co-picker-wrap" style="margin-bottom:16px;padding:12px;background:var(--paper);border-radius:12px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:10px">🏢 Choisir la société</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px" id="co-picker">
+          <div id="cop-0" onclick="pickCompany(0)"
+            style="border:2px solid var(--gold);border-radius:10px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .18s;background:rgba(201,160,48,.08)">
+            <div style="font-size:18px;margin-bottom:4px">🏢</div>
+            <div id="cop-name-0" style="font-size:11px;font-weight:700;color:var(--ink);line-height:1.3">Société 1</div>
+            <div id="cop-theme-0" style="font-size:9px;color:var(--text2);margin-top:2px">Bleu Royal</div>
+          </div>
+          <div id="cop-1" onclick="pickCompany(1)"
+            style="border:2px solid var(--border);border-radius:10px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .18s">
+            <div style="font-size:18px;margin-bottom:4px">🏢</div>
+            <div id="cop-name-1" style="font-size:11px;font-weight:700;color:var(--ink);line-height:1.3">Société 2</div>
+            <div id="cop-theme-1" style="font-size:9px;color:var(--text2);margin-top:2px">Vert Prestige</div>
+          </div>
+          <div id="cop-2" onclick="pickCompany(2)"
+            style="border:2px solid var(--border);border-radius:10px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .18s">
+            <div style="font-size:18px;margin-bottom:4px">🏢</div>
+            <div id="cop-name-2" style="font-size:11px;font-weight:700;color:var(--ink);line-height:1.3">Société 3</div>
+            <div id="cop-theme-2" style="font-size:9px;color:var(--text2);margin-top:2px">Bronze Élite</div>
+          </div>
+        </div>
+      </div>
+
       <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:10px" id="ml_client">Client</p>
       <div class="fgrid">
         <div class="fg full"><label class="flabel" id="ml_cname">Nom du client</label><input id="f_cname" placeholder="Société / Particulier"></div>
@@ -1554,19 +1657,22 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
 <script>
 
 /* ══ DATA ══ */
-var cfg = {
-  name:'', addr:'', tel:'', email:'',
-  tva:20, ice:'', rc:'', pat:'', cnss:'',
-  capital:'', slogan:'', logo:''
-};
-var devis=[], factures=[];
+// ── 3 Companies ──
+var companies = [
+  {name:'',addr:'',tel:'',email:'',tva:20,ice:'',rc:'',pat:'',cnss:'',capital:'',slogan:'',logo:'',theme:1,devis:[],factures:[],dvN:1,fcN:1},
+  {name:'',addr:'',tel:'',email:'',tva:20,ice:'',rc:'',pat:'',cnss:'',capital:'',slogan:'',logo:'',theme:2,devis:[],factures:[],dvN:1,fcN:1},
+  {name:'',addr:'',tel:'',email:'',tva:20,ice:'',rc:'',pat:'',cnss:'',capital:'',slogan:'',logo:'',theme:3,devis:[],factures:[],dvN:1,fcN:1}
+];
+var activeCompany = 0; // 0, 1, or 2
+var cfg = companies[activeCompany];
+var devis = companies[activeCompany].devis;
+var factures = companies[activeCompany].factures;
 var produits=[
   {id:1,name:'Faux plafond Armstrong',desc:'Fourniture et pose',unite:'M²',prix:140},
   {id:2,name:'Panneau LED encastrable MQL',desc:'Haute performance – Garantie 1 an',unite:'U',prix:240},
   {id:3,name:"Main d'œuvre pose LED",desc:'Câblage et raccordement inclus',unite:'U',prix:50},
   {id:4,name:'Conseil technique',desc:'Audit et conseil',unite:'Jrs',prix:800}
 ];
-var dvCounter=1, fcCounter=1;
 var lang='fr';
 var docItems=[], editDocIdx=null, docType='devis';
 var editProdIdx=null;
@@ -1815,7 +1921,31 @@ function openDocModal(type){
   $('f_date').value=new Date().toISOString().split('T')[0];
   $('f_notes').value='';
   $('m-doc-title').textContent=T(type==='devis'?'qaD':'qaF');
+  refreshPickerCards();
+  pickCompany(activeCompany);
   renderItems(); $('modal-doc').classList.add('open');
+}
+
+function refreshPickerCards(){
+  var themeNames=['Bleu Royal','Vert Prestige','Bronze Élite'];
+  [0,1,2].forEach(function(i){
+    var c=companies[i];
+    var nameEl=$('cop-name-'+i), thEl=$('cop-theme-'+i);
+    if(nameEl) nameEl.textContent = c.name||'Société '+(i+1);
+    if(thEl)   thEl.textContent   = themeNames[(c.theme||1)-1];
+  });
+}
+
+function pickCompany(idx){
+  activeCompany=idx;
+  cfg=companies[idx]; devis=companies[idx].devis; factures=companies[idx].factures;
+  [0,1,2].forEach(function(i){
+    var el=$('cop-'+i); if(!el) return;
+    var isActive=(i===idx);
+    el.style.borderColor  = isActive?'var(--gold)':'var(--border)';
+    el.style.background   = isActive?'rgba(201,160,48,.1)':'transparent';
+    el.style.transform    = isActive?'scale(1.04)':'scale(1)';
+  });
 }
 function editDoc(idx,type){
   var list=type==='devis'?devis:factures, d=list[idx];
@@ -1824,9 +1954,15 @@ function editDoc(idx,type){
   $('f_cname').value=d.cname; $('f_ctel').value=d.ctel||''; $('f_caddr').value=d.caddr||'';
   $('f_statut').value=d.statut; $('f_date').value=d.date; $('f_notes').value=d.notes||'';
   $('m-doc-title').textContent='✎ '+d.num;
+  // Hide company picker when editing (company already fixed)
+  var pw=$('co-picker-wrap'); if(pw) pw.style.display='none';
   renderItems(); $('modal-doc').classList.add('open');
 }
-function closeDocModal(){ $('modal-doc').classList.remove('open'); }
+function closeDocModal(){
+  $('modal-doc').classList.remove('open');
+  // Restore picker for next new doc
+  var pw=$('co-picker-wrap'); if(pw) pw.style.display='block';
+}
 
 function renderItems(){
   var opts=produits.map(function(p){
@@ -1895,15 +2031,19 @@ function saveDoc(){
     cname:$('f_cname').value||'Client', ctel:$('f_ctel').value, caddr:$('f_caddr').value,
     statut:$('f_statut').value, date:$('f_date').value, notes:$('f_notes').value,
     items:JSON.parse(JSON.stringify(docItems)),
-    totalHT:ht, totalTTC:ht*(1+tva/100)
+    totalHT:ht, totalTTC:ht*(1+tva/100),
+    coIdx: activeCompany
   };
-  var list=docType==='devis'?devis:factures;
+  var co=companies[activeCompany];
+  var list=docType==='devis'?co.devis:co.factures;
+  devis=co.devis; factures=co.factures;
   if(editDocIdx!==null){ doc.num=list[editDocIdx].num; list[editDocIdx]=doc; }
-  else {
-    var c=docType==='devis'?dvCounter++:fcCounter++;
-    doc.num=(docType==='devis'?'DEV':'FAC')+'-'+String(c).padStart(4,'0')+'-'+new Date().getFullYear();
+  else{
+    var n=docType==='devis'?co.dvN++:co.fcN++;
+    doc.num=(docType==='devis'?'DEV':'FAC')+'-'+String(n).padStart(4,'0')+'-'+new Date().getFullYear();
     list.push(doc);
   }
+  saveAllData();
   closeDocModal(); renderAll(); toast(T('savedOk'));
 }
 
@@ -1926,55 +2066,125 @@ function saveProd(){
   $('modal-prod').classList.remove('open'); renderProd(); toast(T('savedOk'));
 }
 
-/* ══ SETTINGS ══ */
+/* ══ SETTINGS — MULTI-COMPANY ══ */
+var editingCo = 0;
+
+function openCfgTab(idx){
+  editingCo = idx;
+  [0,1,2].forEach(function(i){
+    var b=$('cfg-tab-'+i); if(!b) return;
+    b.style.borderColor=(i===idx)?'var(--gold)':'var(--border)';
+    b.style.background =(i===idx)?'var(--card)':'transparent';
+    b.style.color      =(i===idx)?'var(--ink)' :'var(--text2)';
+  });
+  fillCfgForm(idx);
+}
+
+function fillCfgForm(idx){
+  var c=companies[idx];
+  if($('cfg_name'))    $('cfg_name').value    =c.name    ||'';
+  if($('cfg_addr'))    $('cfg_addr').value    =c.addr    ||'';
+  if($('cfg_tel'))     $('cfg_tel').value     =c.tel     ||'';
+  if($('cfg_email'))   $('cfg_email').value   =c.email   ||'';
+  if($('cfg_tva'))     $('cfg_tva').value     =c.tva     ||20;
+  if($('cfg_ice'))     $('cfg_ice').value     =c.ice     ||'';
+  if($('cfg_slogan'))  $('cfg_slogan').value  =c.slogan  ||'';
+  if($('cfg_capital')) $('cfg_capital').value =c.capital ||'';
+  var rcVal=[c.rc,c.pat,c.cnss].filter(Boolean).join(' / ');
+  if($('cfg_rc')) $('cfg_rc').value=rcVal;
+  var wrap=$('logo-preview-wrap'),img=$('logo-preview-img');
+  if(c.logo){if(wrap)wrap.style.display='block';if(img)img.src=c.logo;}
+  else{if(wrap)wrap.style.display='none';}
+  highlightTheme(c.theme||1);
+}
+
+function selectTheme(t){ companies[editingCo].theme=t; highlightTheme(t); }
+function highlightTheme(t){
+  [1,2,3].forEach(function(i){
+    var el=$('th-'+i); if(!el) return;
+    el.style.borderColor=(i===t)?'var(--gold)':'var(--border)';
+    el.style.opacity=(i===t)?'1':'0.6';
+  });
+}
+
 function saveCfg(){
-  cfg.name=$('cfg_name').value; cfg.addr=$('cfg_addr').value;
-  cfg.tel=$('cfg_tel').value; cfg.email=$('cfg_email').value;
-  cfg.tva=parseFloat($('cfg_tva').value)||20; cfg.ice=$('cfg_ice').value;
-  cfg.capital=$('cfg_capital').value; cfg.slogan=$('cfg_slogan').value;
-  var rv=($('cfg_rc').value||'').split('/').map(function(x){ return x.trim(); });
-  cfg.rc=rv[0]||''; cfg.pat=rv[1]||''; cfg.cnss=rv[2]||'';
-  // Save to localStorage
-  try {
-    localStorage.setItem('finiplus_cfg', JSON.stringify(cfg));
-  } catch(e){}
+  var c=companies[editingCo];
+  c.name    =$('cfg_name').value;  c.addr=$('cfg_addr').value;
+  c.tel     =$('cfg_tel').value;   c.email=$('cfg_email').value;
+  c.tva     =parseFloat($('cfg_tva').value)||20;
+  c.ice     =$('cfg_ice').value;   c.capital=$('cfg_capital').value;
+  c.slogan  =$('cfg_slogan').value;
+  var rv=($('cfg_rc').value||'').split('/').map(function(x){return x.trim();});
+  c.rc=rv[0]||''; c.pat=rv[1]||''; c.cnss=rv[2]||'';
+  if(editingCo===activeCompany) cfg=companies[activeCompany];
+  updateSwitcherLabels();
+  saveAllData();
   toast(T('savedOk'));
 }
 
-function loadCfg(){
-  try {
-    var saved = localStorage.getItem('finiplus_cfg');
-    if(saved){
-      var s = JSON.parse(saved);
-      Object.assign(cfg, s);
-      // Restore form fields
-      if($('cfg_name'))    $('cfg_name').value    = cfg.name    || '';
-      if($('cfg_addr'))    $('cfg_addr').value    = cfg.addr    || '';
-      if($('cfg_tel'))     $('cfg_tel').value     = cfg.tel     || '';
-      if($('cfg_email'))   $('cfg_email').value   = cfg.email   || '';
-      if($('cfg_tva'))     $('cfg_tva').value     = cfg.tva     || 20;
-      if($('cfg_ice'))     $('cfg_ice').value     = cfg.ice     || '';
-      if($('cfg_slogan'))  $('cfg_slogan').value  = cfg.slogan  || '';
-      if($('cfg_capital')) $('cfg_capital').value = cfg.capital || '';
-      var rcVal = [cfg.rc, cfg.pat, cfg.cnss].filter(Boolean).join(' / ');
-      if($('cfg_rc')) $('cfg_rc').value = rcVal;
-      // Restore logo preview
-      if(cfg.logo){
-        var wrap = $('logo-preview-wrap');
-        var img  = $('logo-preview-img');
-        if(wrap) wrap.style.display = 'block';
-        if(img)  img.src = cfg.logo;
+function switchCompany(idx){
+  activeCompany=idx;
+  cfg      =companies[idx];
+  devis    =companies[idx].devis;
+  factures =companies[idx].factures;
+  updateSwitcherLabels();
+  renderAll();
+}
+
+function updateSwitcherLabels(){
+  [0,1,2].forEach(function(i){
+    // Update settings tabs
+    var t=$('cfg-tab-'+i);
+    if(t) t.textContent='🏢 '+(companies[i].name?companies[i].name.substring(0,14):'Société '+(i+1));
+  });
+}
+
+function saveAllData(){
+  try{
+    var payload=companies.map(function(c){
+      return Object.assign({},c,{logo:c.logo?'__LOGO__':''});
+    });
+    localStorage.setItem('fp_cos',JSON.stringify(payload));
+    localStorage.setItem('fp_active',String(activeCompany));
+    companies.forEach(function(c,i){
+      if(c.logo&&c.logo!=='__LOGO__'){
+        try{localStorage.setItem('fp_logo_'+i,c.logo);}catch(e){}
       }
+    });
+  }catch(e){}
+}
+
+function loadCfg(){
+  try{
+    var raw=localStorage.getItem('fp_cos');
+    if(!raw){
+      var old=localStorage.getItem('finiplus_cfg');
+      if(old) try{Object.assign(companies[0],JSON.parse(old));}catch(e){}
+    }else{
+      JSON.parse(raw).forEach(function(c,i){
+        if(!companies[i]) return;
+        // preserve arrays
+        var dv=companies[i].devis, fc=companies[i].factures;
+        Object.assign(companies[i],c);
+        if(!companies[i].devis.length)    companies[i].devis=dv;
+        if(!companies[i].factures.length) companies[i].factures=fc;
+        if(c.logo==='__LOGO__'){
+          var lg=localStorage.getItem('fp_logo_'+i);
+          companies[i].logo=lg||'';
+        }
+      });
     }
-  } catch(e){}
+    var ai=parseInt(localStorage.getItem('fp_active'))||0;
+    switchCompany(Math.min(ai,2));
+  }catch(e){}
+  fillCfgForm(editingCo);
 }
 
 function removeLogo(){
-  cfg.logo = '';
-  var wrap = $('logo-preview-wrap');
-  if(wrap) wrap.style.display = 'none';
-  var fileInput = $('cfg_logo_file');
-  if(fileInput) fileInput.value = '';
+  companies[editingCo].logo='';
+  try{localStorage.removeItem('fp_logo_'+editingCo);}catch(e){}
+  var wrap=$('logo-preview-wrap'); if(wrap) wrap.style.display='none';
+  var fi=$('cfg_logo_file'); if(fi) fi.value='';
 }
 
 /* ══ N2W (French) ══ */
@@ -2013,10 +2223,185 @@ function logoSVG(sz){
     '</svg>';
 }
 
+/* ══ DOCUMENT THEMES ══════════════════════════════════
+   Theme 1 — Bleu Royal  : classique élégant, police serif, table à rayures douces
+   Theme 2 — Vert Prestige: moderne épuré, bandeau vert, table zébrée verte
+   Theme 3 — Bronze Élite : luxe premium, header dégradé brun-or, table encadrée
+   ══════════════════════════════════════════════════ */
+function buildDocHTML(c, d, type, rows, tva, ta, logoHtml, footerHtml){
+  var th = c.theme || 1;
+  var label  = (type==='devis'?'DEVIS':'FACTURE')+' N\u00b0 '+d.num;
+  var client = d.cname+(d.caddr?' \u2014 '+d.caddr:'')+(d.ctel?' | '+d.ctel:'');
+  var totalHT  = Number(d.totalHT).toFixed(2);
+  var totalTTC = Number(d.totalTTC).toFixed(2);
+  var taFmt    = ta.toFixed(2);
+  var arrete   = 'ARR\u00caT\u00c9 LA PR\u00c9SENTE '+(type==='devis'?'DEVIS':'FACTURE')+' \u00c0 LA SOMME DE :';
+  var noteHtml = d.notes?'<div style="margin-top:11px;font-size:11px;color:#555;padding:9px 12px;background:#f9f9f9;border-left:3px solid #ccc">'+d.notes+'</div>':'';
+
+  /* ── THEME 1 : Bleu Royal ── */
+  if(th===1){
+    var r1=d.items.map(function(it,i){
+      var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
+      var nm=pr?pr.name+(pr.desc?'<br><small style="color:#888;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'\u2013');
+      return '<tr style="background:'+(i%2===0?'#fff':'#F4F8FF')+'">'+
+        '<td style="padding:9px 10px;border-bottom:1px solid #D8E4F5;font-size:12px">'+nm+'</td>'+
+        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:center;font-size:12px">'+(it.unite||'U')+'</td>'+
+        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:center;font-size:12px">'+Number(it.qty).toFixed(2)+'</td>'+
+        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:right;font-size:12px">'+Number(it.pu).toFixed(2)+'</td>'+
+        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:right;font-size:12px;font-weight:700">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+      '</tr>';
+    }).join('');
+    return '<div style="background:#fff;padding:32px;font-family:Georgia,serif;color:#0A1628;max-width:720px;margin:0 auto">'+
+      logoHtml+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
+        '<div style="background:linear-gradient(135deg,#0B1A2E,#1A3A6E);color:#fff;padding:11px 20px;font-size:13px;font-weight:700;letter-spacing:2px;border-radius:4px">'+label+'</div>'+
+        '<div style="text-align:right;font-size:11px;color:#666;font-family:sans-serif">Date : <strong style="color:#0B1A2E;font-size:13px">'+d.date+'</strong></div>'+
+      '</div>'+
+      '<div style="margin-bottom:16px;padding:10px 14px;background:#EEF4FF;border-left:4px solid #1A3A6E;font-size:12px;font-family:sans-serif">'+
+        '<strong>'+T('billTo')+' :</strong> '+client+
+      '</div>'+
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #C9D8F0">'+
+      '<thead><tr style="background:linear-gradient(to right,#0B1A2E,#1A3A6E);color:rgba(255,255,255,.9)">'+
+      '<th style="padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1.2px">D\u00c9SIGNATIONS</th>'+
+      '<th style="padding:9px 6px;text-align:center;font-size:10px;width:9%">UNIT\u00c9</th>'+
+      '<th style="padding:9px 6px;text-align:center;font-size:10px;width:10%">QT\u00c9</th>'+
+      '<th style="padding:9px 6px;text-align:right;font-size:10px;width:13%">P.U HT</th>'+
+      '<th style="padding:9px 6px;text-align:right;font-size:10px;width:13%">P.T HT</th>'+
+      '</tr></thead><tbody>'+r1+'</tbody>'+
+      '<tr><td colspan="3" style="border-top:2px solid #1A3A6E"></td>'+
+      '<td style="padding:8px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #1A3A6E;font-family:sans-serif">TOTAL HT</td>'+
+      '<td style="padding:8px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #1A3A6E;font-family:sans-serif">'+totalHT+' MAD</td></tr>'+
+      '<tr><td colspan="3"></td><td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;font-family:sans-serif">TVA ('+tva+'%)</td>'+
+      '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;font-family:sans-serif">'+taFmt+' MAD</td></tr>'+
+      '<tr style="background:#EEF4FF"><td colspan="3"></td>'+
+      '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E;font-family:sans-serif">TOTAL TTC</td>'+
+      '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E;color:#0B1A2E;font-family:sans-serif">'+totalTTC+' MAD</td></tr>'+
+      '</table>'+noteHtml+
+      '<div style="margin-top:16px;font-size:11px;color:#333;border-top:1px solid #ddd;padding-top:12px;font-family:sans-serif">'+
+        '<strong>'+arrete+'</strong><br>'+
+        '<em style="color:#1A3A6E;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+      '</div>'+footerHtml+'</div>';
+  }
+
+  /* ── THEME 2 : Vert Prestige ── */
+  if(th===2){
+    var r2=d.items.map(function(it,i){
+      var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
+      var nm=pr?pr.name+(pr.desc?'<br><small style="color:#888;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'\u2013');
+      return '<tr style="background:'+(i%2===0?'#F4FBF4':'#fff')+'">'+
+        '<td style="padding:10px 10px;font-size:12px;border-bottom:1px solid #C8E6C9">'+nm+'</td>'+
+        '<td style="padding:10px 6px;text-align:center;font-size:12px;border-bottom:1px solid #C8E6C9">'+(it.unite||'U')+'</td>'+
+        '<td style="padding:10px 6px;text-align:center;font-size:12px;border-bottom:1px solid #C8E6C9">'+Number(it.qty).toFixed(2)+'</td>'+
+        '<td style="padding:10px 6px;text-align:right;font-size:12px;border-bottom:1px solid #C8E6C9">'+Number(it.pu).toFixed(2)+'</td>'+
+        '<td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;border-bottom:1px solid #C8E6C9;color:#1A5C35">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+      '</tr>';
+    }).join('');
+    return '<div style="background:#fff;padding:0;font-family:\'Helvetica Neue\',Arial,sans-serif;color:#1A2A1A;max-width:720px;margin:0 auto">'+
+      '<div style="background:linear-gradient(135deg,#1A5C35,#0D3D22);padding:22px 28px;color:#E8F5E9">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center">'+
+          '<div>'+
+            (c.logo?'<img src="'+c.logo+'" style="max-height:60px;max-width:180px;object-fit:contain;display:block;margin-bottom:8px">':
+              (c.name?'<div style="font-size:20px;font-weight:800;letter-spacing:2px;color:#fff">'+c.name+'</div>':''))+
+            (c.slogan?'<div style="font-size:9px;opacity:.7;margin-top:2px;letter-spacing:1px">'+c.slogan+'</div>':'')+
+          '</div>'+
+          '<div style="text-align:right">'+
+            '<div style="font-size:16px;font-weight:800;letter-spacing:1px;color:#81C784">'+label+'</div>'+
+            '<div style="font-size:11px;opacity:.75;margin-top:4px">'+d.date+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="padding:20px 28px">'+
+      '<div style="margin-bottom:16px;padding:10px 14px;background:#E8F5E9;border-radius:6px;border-left:4px solid #4CAF50;font-size:12px">'+
+        '<strong>'+T('billTo')+' :</strong> '+client+
+      '</div>'+
+      '<table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:2px solid #4CAF50">'+
+      '<thead><tr style="background:#1A5C35;color:#E8F5E9">'+
+      '<th style="padding:10px 10px;text-align:left;font-size:11px;letter-spacing:.8px">DÉSIGNATION</th>'+
+      '<th style="padding:10px 6px;text-align:center;font-size:11px;width:9%">UNITÉ</th>'+
+      '<th style="padding:10px 6px;text-align:center;font-size:11px;width:10%">QTÉ</th>'+
+      '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%">P.U HT</th>'+
+      '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%">TOTAL HT</th>'+
+      '</tr></thead><tbody>'+r2+'</tbody>'+
+      '<tr style="background:#E8F5E9"><td colspan="3"></td>'+
+      '<td style="padding:8px 6px;text-align:right;font-weight:600;font-size:12px;border-top:2px solid #4CAF50">Sous-total HT</td>'+
+      '<td style="padding:8px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #4CAF50">'+totalHT+' MAD</td></tr>'+
+      '<tr><td colspan="3"></td><td style="padding:5px 6px;text-align:right;font-size:11px;color:#666">TVA '+tva+'%</td>'+
+      '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#666">'+taFmt+' MAD</td></tr>'+
+      '<tr style="background:#1A5C35;color:#fff"><td colspan="3"></td>'+
+      '<td style="padding:12px 6px;text-align:right;font-weight:800;font-size:14px;letter-spacing:.5px">TOTAL TTC</td>'+
+      '<td style="padding:12px 6px;text-align:right;font-weight:900;font-size:15px;color:#81C784">'+totalTTC+' MAD</td></tr>'+
+      '</table>'+noteHtml+
+      '<div style="margin-top:14px;font-size:11px;color:#333;border-top:2px dashed #4CAF50;padding-top:10px">'+
+        '<strong>'+arrete+'</strong><br>'+
+        '<em style="color:#1A5C35;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+      '</div>'+footerHtml+'</div></div>';
+  }
+
+  /* ── THEME 3 : Bronze Élite ── */
+  var r3=d.items.map(function(it,i){
+    var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
+    var nm=pr?pr.name+(pr.desc?'<br><small style="color:#999;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'\u2013');
+    var bg=i%2===0?'#FFFCF5':'#FFF8EE';
+    return '<tr>'+
+      '<td style="padding:10px 10px;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+nm+'</td>'+
+      '<td style="padding:10px 6px;text-align:center;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+(it.unite||'U')+'</td>'+
+      '<td style="padding:10px 6px;text-align:center;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+Number(it.qty).toFixed(2)+'</td>'+
+      '<td style="padding:10px 6px;text-align:right;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+Number(it.pu).toFixed(2)+'</td>'+
+      '<td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;border:1px solid #E0D0B0;background:'+bg+';color:#7B3A00">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+    '</tr>';
+  }).join('');
+  return '<div style="background:#FFFCF5;padding:0;font-family:\'Palatino Linotype\',Palatino,Georgia,serif;color:#2A1500;max-width:720px;margin:0 auto;border:1px solid #E0D0B0">'+
+    '<div style="background:linear-gradient(135deg,#5C2000,#8B4000,#6B2800);padding:22px 28px;color:#FFE8C0">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div>'+
+          (c.logo?'<img src="'+c.logo+'" style="max-height:60px;max-width:180px;object-fit:contain;display:block;margin-bottom:6px">':
+            (c.name?'<div style="font-size:20px;font-weight:800;letter-spacing:3px;color:#FFE8C0">'+c.name+'</div>':''))+
+          (c.slogan?'<div style="font-size:9px;letter-spacing:2px;opacity:.65;margin-top:3px">'+c.slogan+'</div>':'')+
+        '</div>'+
+        '<div style="text-align:right">'+
+          '<div style="font-size:16px;font-weight:800;letter-spacing:1.5px;color:#FF9D40">'+label+'</div>'+
+          '<div style="font-size:11px;opacity:.75;margin-top:5px;font-family:sans-serif">'+d.date+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="padding:22px 28px">'+
+    '<div style="margin-bottom:18px;padding:10px 14px;background:#FFF3E0;border:1px solid #D4A060;border-radius:4px;font-size:12px;font-family:sans-serif">'+
+      '<strong>'+T('billTo')+' :</strong> '+client+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;border:2px solid #C88040">'+
+    '<thead><tr style="background:linear-gradient(to right,#7B3A00,#5C2000);color:#FFE8C0">'+
+    '<th style="padding:10px 10px;text-align:left;font-size:11px;letter-spacing:.8px;border:1px solid #A05000">DÉSIGNATIONS</th>'+
+    '<th style="padding:10px 6px;text-align:center;font-size:11px;width:9%;border:1px solid #A05000">UNITÉ</th>'+
+    '<th style="padding:10px 6px;text-align:center;font-size:11px;width:10%;border:1px solid #A05000">QTÉ</th>'+
+    '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%;border:1px solid #A05000">P.U HT</th>'+
+    '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%;border:1px solid #A05000">P.T HT</th>'+
+    '</tr></thead><tbody>'+r3+'</tbody>'+
+    '<tr style="background:#FFF3E0"><td colspan="3" style="border:1px solid #E0D0B0"></td>'+
+    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border:1px solid #E0D0B0;font-family:sans-serif">TOTAL HT</td>'+
+    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border:1px solid #E0D0B0;font-family:sans-serif">'+totalHT+' MAD</td></tr>'+
+    '<tr><td colspan="3" style="border:1px solid #E0D0B0"></td>'+
+    '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;border:1px solid #E0D0B0;font-family:sans-serif">TVA '+tva+'%</td>'+
+    '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;border:1px solid #E0D0B0;font-family:sans-serif">'+taFmt+' MAD</td></tr>'+
+    '<tr style="background:linear-gradient(to right,#7B3A00,#5C2000);color:#FFE8C0">'+
+    '<td colspan="3" style="border:1px solid #A05000"></td>'+
+    '<td style="padding:12px 6px;text-align:right;font-weight:800;font-size:14px;letter-spacing:.5px;border:1px solid #A05000;font-family:sans-serif">TOTAL TTC</td>'+
+    '<td style="padding:12px 6px;text-align:right;font-weight:900;font-size:15px;color:#FF9D40;border:1px solid #A05000;font-family:sans-serif">'+totalTTC+' MAD</td></tr>'+
+    '</table>'+noteHtml+
+    '<div style="margin-top:14px;font-size:11px;color:#5C3000;border-top:2px solid #D4A060;padding-top:10px;font-family:sans-serif">'+
+      '<strong>'+arrete+'</strong><br>'+
+      '<em style="color:#7B3A00;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+    '</div>'+footerHtml.replace('color:#888','color:#8B5C20')+
+    '</div></div>';
+}
+
+
 /* ══ PREVIEW ══ */
 function previewDoc(idx,type){
   var list=type==='devis'?devis:factures, d=list[idx];
-  var tva=cfg.tva, ta=d.totalHT*tva/100;
+  // Use the company that created this doc (fallback to activeCompany)
+  var docCo = (d.coIdx !== undefined) ? companies[d.coIdx] : companies[activeCompany];
+  var docCfg = docCo || cfg;
+  var tva=docCfg.tva, ta=d.totalHT*tva/100;
   curDocNum=d.num; curDocType=type;
   var rows=d.items.map(function(it){
     var pr=produits.find(function(p){ return String(p.id)===String(it.prodId); });
@@ -2029,76 +2414,41 @@ function previewDoc(idx,type){
       '<td style="padding:9px 6px;border-bottom:1px solid #ddd;text-align:right;font-size:12px;font-weight:700;">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
     '</tr>';
   }).join('');
+  var c4logo = docCfg;
   // Build logo section (top)
   var logoHtml = '';
-  if(cfg.logo){
+  if(c4logo.logo){
     logoHtml = '<div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #0B1A2E">'+
-      '<img src="'+cfg.logo+'" style="max-height:90px;max-width:260px;object-fit:contain">'+
-      (cfg.slogan?'<div style="font-size:9px;letter-spacing:2px;color:#888;margin-top:6px">'+cfg.slogan+'</div>':'')+
+      '<img src="'+c4logo.logo+'" style="max-height:90px;max-width:260px;object-fit:contain">'+
+      (c4logo.slogan?'<div style="font-size:9px;letter-spacing:2px;color:#888;margin-top:6px">'+c4logo.slogan+'</div>':'')+
     '</div>';
-  } else if(cfg.name){
+  } else if(c4logo.name){
     logoHtml = '<div style="text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #0B1A2E">'+
-      '<div style="font-family:Georgia,serif;font-size:26px;font-weight:700;letter-spacing:4px;color:#0B1A2E">'+cfg.name+'</div>'+
-      (cfg.slogan?'<div style="font-size:9px;letter-spacing:2px;color:#888;margin-top:4px">'+cfg.slogan+'</div>':'')+
+      '<div style="font-family:Georgia,serif;font-size:26px;font-weight:700;letter-spacing:4px;color:#0B1A2E">'+c4logo.name+'</div>'+
+      (c4logo.slogan?'<div style="font-size:9px;letter-spacing:2px;color:#888;margin-top:4px">'+c4logo.slogan+'</div>':'')+
     '</div>';
   }
 
   // Build company footer (bottom)
   var footerParts = [];
-  if(cfg.capital) footerParts.push('SARL au Capital de '+cfg.capital);
-  if(cfg.addr) footerParts.push(cfg.addr);
+  if(docCfg.capital) footerParts.push('SARL au Capital de '+cfg.capital);
+  if(docCfg.addr) footerParts.push(cfg.addr);
   var regParts = [];
-  if(cfg.rc)   regParts.push('RC : '+cfg.rc);
-  if(cfg.pat)  regParts.push('Pat : '+cfg.pat);
-  if(cfg.cnss) regParts.push('CNSS : '+cfg.cnss);
-  if(cfg.ice)  regParts.push('ICE : '+cfg.ice);
+  if(docCfg.rc)   regParts.push('RC : '+cfg.rc);
+  if(docCfg.pat)  regParts.push('Pat : '+cfg.pat);
+  if(docCfg.cnss) regParts.push('CNSS : '+cfg.cnss);
+  if(docCfg.ice)  regParts.push('ICE : '+cfg.ice);
   if(regParts.length) footerParts.push(regParts.join(' / '));
   var contactParts = [];
-  if(cfg.tel)   contactParts.push(cfg.tel);
-  if(cfg.email) contactParts.push(cfg.email);
+  if(docCfg.tel)   contactParts.push(cfg.tel);
+  if(docCfg.email) contactParts.push(cfg.email);
   if(contactParts.length) footerParts.push(contactParts.join(' | '));
   var footerHtml = footerParts.length ?
     '<div style="margin-top:20px;border-top:1px dashed #ccc;padding-top:10px;text-align:center;font-size:9px;color:#888;line-height:2.2">'+
       footerParts.join('<br>')+
     '</div>' : '';
 
-  $('preview-doc').innerHTML=
-    '<div style="background:#fff;padding:32px;font-family:sans-serif;color:#0A1628;max-width:720px;margin:0 auto">'+
-    logoHtml+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'+
-      '<div style="background:#0B1A2E;color:#fff;padding:10px 18px;font-size:13px;font-weight:700;letter-spacing:2px;border-radius:4px">'+
-        (type==='devis'?'DEVIS':'FACTURE')+' N° '+d.num+
-      '</div>'+
-      '<div style="text-align:right;font-size:11px;color:#666">Date : <strong>'+d.date+'</strong></div>'+
-    '</div>'+
-    '<div style="font-size:12px;margin-bottom:16px;padding:10px 14px;background:#F0F5FF;border-left:3px solid #1A5A9E;border-radius:0 4px 4px 0">'+
-      '<strong>'+T('billTo')+' :</strong> '+d.cname+(d.caddr?' — '+d.caddr:'')+(d.ctel?' | '+d.ctel:'')+
-    '</div>'+
-    '<table style="width:100%;border-collapse:collapse">'+
-    '<thead><tr style="background:#0B1A2E;color:rgba(255,255,255,.85)">'+
-    '<th style="padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1px">Désignations</th>'+
-    '<th style="padding:9px 6px;text-align:center;font-size:10px;width:9%">Unité</th>'+
-    '<th style="padding:9px 6px;text-align:center;font-size:10px;width:10%">Qté</th>'+
-    '<th style="padding:9px 6px;text-align:right;font-size:10px;width:14%">P.U HT</th>'+
-    '<th style="padding:9px 6px;text-align:right;font-size:10px;width:14%">P.T HT</th>'+
-    '</tr></thead><tbody>'+rows+'</tbody>'+
-    '<tr><td colspan="3"></td>'+
-    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #ddd">TOTAL HT</td>'+
-    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #ddd">'+Number(d.totalHT).toFixed(2)+' MAD</td></tr>'+
-    '<tr><td colspan="3"></td>'+
-    '<td style="padding:5px 6px;text-align:right;font-size:12px">TVA ('+tva+'%)</td>'+
-    '<td style="padding:5px 6px;text-align:right;font-size:12px">'+ta.toFixed(2)+' MAD</td></tr>'+
-    '<tr style="background:#EEF3FF"><td colspan="3"></td>'+
-    '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E">TOTAL TTC</td>'+
-    '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E">'+Number(d.totalTTC).toFixed(2)+' MAD</td></tr>'+
-    '</table>'+
-    (d.notes?'<div style="margin-top:12px;font-size:11px;color:#555;padding:9px;background:#f9f9f9;border-left:2px solid #ccc;border-radius:0 4px 4px 0">'+d.notes+'</div>':'')+
-    '<div style="margin-top:16px;font-size:11px;color:#333;border-top:1px solid #e0e0e0;padding-top:12px">'+
-    '<strong>ARRÊTÉ LA PRÉSENTE '+(type==='devis'?'DEVIS':'FACTURE')+' À LA SOMME DE :</strong><br>'+
-    '<em style="color:#1A5A9E;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
-    '</div>'+
-    footerHtml+
-    '</div>';
+  $('preview-doc').innerHTML = buildDocHTML(docCfg, d, type, rows, tva, ta, logoHtml, footerHtml);
   $('preview-overlay').classList.add('open');
 }
 
@@ -2374,11 +2724,11 @@ document.addEventListener('DOMContentLoaded',function(){
     }
     var reader = new FileReader();
     reader.onload = function(e){
-      cfg.logo = e.target.result;
-      var wrap = $('logo-preview-wrap');
-      var img  = $('logo-preview-img');
-      if(wrap) wrap.style.display = 'block';
-      if(img)  img.src = cfg.logo;
+      companies[editingCo].logo=e.target.result;
+      if(editingCo===activeCompany) cfg.logo=companies[editingCo].logo;
+      var wrap=$('logo-preview-wrap'),img=$('logo-preview-img');
+      if(wrap) wrap.style.display='block';
+      if(img)  img.src=e.target.result;
     };
     reader.readAsDataURL(file);
   });

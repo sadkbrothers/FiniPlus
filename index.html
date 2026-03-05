@@ -2040,7 +2040,7 @@ function saveDoc(){
   if(editDocIdx!==null){ doc.num=list[editDocIdx].num; list[editDocIdx]=doc; }
   else{
     var n=docType==='devis'?co.dvN++:co.fcN++;
-    doc.num=(docType==='devis'?'DEV':'FAC')+'-'+String(n).padStart(4,'0')+'-'+new Date().getFullYear();
+    doc.num=(docType==='devis'?'DEV':'FAC')+'-'+String(n).padStart(4,'0');
     list.push(doc);
   }
   saveAllData();
@@ -2230,167 +2230,240 @@ function logoSVG(sz){
    ══════════════════════════════════════════════════ */
 function buildDocHTML(c, d, type, rows, tva, ta, logoHtml, footerHtml){
   var th = c.theme || 1;
-  var label  = (type==='devis'?'DEVIS':'FACTURE')+' N\u00b0 '+d.num;
-  var client = d.cname+(d.caddr?' \u2014 '+d.caddr:'')+(d.ctel?' | '+d.ctel:'');
+
+  /* ── Invoice number format per theme ──
+     T1 FINI PLUS    : "Devis N°: DEV-0023"  — texte souligné
+     T2 SADK BROTHERS: "DEVIS N° 00023"       — texte normal gras
+     T3 SOSADIT      : "Dev#0023"             — texte italique
+  ── */
+  var rawNum = d.num || '0001';
+  // strip any old year suffix e.g. DEV-0001-2024 → 0001
+  var digits = rawNum.replace(/[^0-9]/g,'').replace(/^0+/,'') || '0';
+  var pad4   = ('0000'+digits).slice(-4);
+  var pad5   = ('00000'+digits).slice(-5);
+  var isDevis = (type==='devis');
+
+  var labelT1, labelT2, labelT3;
+  if(isDevis){
+    labelT1 = '<span style="text-decoration:underline;letter-spacing:1px">Devis N\u00b0: DEV-'+pad4+'</span>';
+    labelT2 = 'DEVIS N\u00b0 '+pad5;
+    labelT3 = '<em>Dev#'+pad4+'</em>';
+  } else {
+    labelT1 = '<span style="text-decoration:underline;letter-spacing:1px">Facture N\u00b0: FAC-'+pad4+'</span>';
+    labelT2 = 'FACTURE N\u00b0 '+pad5;
+    labelT3 = '<em>Fac#'+pad4+'</em>';
+  }
+
   var totalHT  = Number(d.totalHT).toFixed(2);
   var totalTTC = Number(d.totalTTC).toFixed(2);
   var taFmt    = ta.toFixed(2);
-  var arrete   = 'ARR\u00caT\u00c9 LA PR\u00c9SENTE '+(type==='devis'?'DEVIS':'FACTURE')+' \u00c0 LA SOMME DE :';
-  var noteHtml = d.notes?'<div style="margin-top:11px;font-size:11px;color:#555;padding:9px 12px;background:#f9f9f9;border-left:3px solid #ccc">'+d.notes+'</div>':'';
+  var arrete   = 'ARR\u00caT\u00c9 LA PR\u00c9SENTE '+(isDevis?'DEVIS':'FACTURE')+' \u00c0 LA SOMME DE :';
 
-  /* ── THEME 1 : Bleu Royal ── */
+  /* shared: client single line, truncated with overflow hidden */
+  var clientLine = d.cname+(d.caddr?' \u2014 '+d.caddr:'')+(d.ctel?' | '+d.ctel:'');
+  var noteHtml = d.notes
+    ? '<div style="margin-top:8px;font-size:9px;color:#555;padding:6px 10px;background:#f5f5f5;border-left:2px solid #ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+d.notes+'</div>'
+    : '';
+
+  /* ════════════════════════════════════════════════════
+     THEME 1 — FINI PLUS
+     Fond: dégradé blanc→gris très clair
+     N° souligné, police Georgia serif
+     Table: ombres douces, pas de bordure extérieure
+     ════════════════════════════════════════════════════ */
   if(th===1){
     var r1=d.items.map(function(it,i){
       var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
-      var nm=pr?pr.name+(pr.desc?'<br><small style="color:#888;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'\u2013');
-      return '<tr style="background:'+(i%2===0?'#fff':'#F4F8FF')+'">'+
-        '<td style="padding:9px 10px;border-bottom:1px solid #D8E4F5;font-size:12px">'+nm+'</td>'+
-        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:center;font-size:12px">'+(it.unite||'U')+'</td>'+
-        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:center;font-size:12px">'+Number(it.qty).toFixed(2)+'</td>'+
-        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:right;font-size:12px">'+Number(it.pu).toFixed(2)+'</td>'+
-        '<td style="padding:9px 6px;border-bottom:1px solid #D8E4F5;text-align:right;font-size:12px;font-weight:700">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+      var nm=pr
+        ? '<span style="font-size:9px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+pr.name+'</span>'
+          +(pr.desc?'<span style="font-size:8px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+pr.desc+'</span>':'')
+        : '<span style="font-size:9px">'+(it.prodId||'\u2013')+'</span>';
+      var bg = i%2===0 ? '#FFFFFF' : '#F4F6FA';
+      return '<tr style="background:'+bg+'">'+
+        '<td style="padding:5px 7px;border-bottom:1px solid #E2E8F0;max-width:0;overflow:hidden">'+nm+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E2E8F0;text-align:center;font-size:9px;white-space:nowrap">'+(it.unite||'U')+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E2E8F0;text-align:center;font-size:9px;white-space:nowrap">'+Number(it.qty).toFixed(2)+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E2E8F0;text-align:right;font-size:9px;white-space:nowrap">'+Number(it.pu).toFixed(2)+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E2E8F0;text-align:right;font-size:9px;font-weight:700;white-space:nowrap;color:#1A3A6E">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
       '</tr>';
     }).join('');
-    return '<div style="background:#fff;padding:32px;font-family:Georgia,serif;color:#0A1628;max-width:720px;margin:0 auto">'+
-      logoHtml+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'+
-        '<div style="background:linear-gradient(135deg,#0B1A2E,#1A3A6E);color:#fff;padding:11px 20px;font-size:13px;font-weight:700;letter-spacing:2px;border-radius:4px">'+label+'</div>'+
-        '<div style="text-align:right;font-size:11px;color:#666;font-family:sans-serif">Date : <strong style="color:#0B1A2E;font-size:13px">'+d.date+'</strong></div>'+
+
+    return '<div style="background:linear-gradient(180deg,#FFFFFF 0%,#F0F3F8 100%);padding:24px;font-family:Georgia,serif;color:#1A1A2E;max-width:720px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.08)">'+
+      /* Logo section */
+      (c.logo
+        ? '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #D0D8EA">'+
+            '<img src="'+c.logo+'" style="max-height:52px;max-width:160px;object-fit:contain">'+
+            '<div style="text-align:right;font-size:8px;color:#888;letter-spacing:1px">'+(c.slogan||'')+'</div>'+
+          '</div>'
+        : (c.name
+            ? '<div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid #D0D8EA">'+
+                '<div style="font-size:18px;font-weight:700;letter-spacing:3px;color:#0B1A2E">'+c.name+'</div>'+
+                (c.slogan?'<div style="font-size:8px;color:#888;margin-top:2px">'+c.slogan+'</div>':'')+'</div>'
+            : ''))+
+      /* Header row: N° left, Date right */
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'+
+        '<div style="font-size:11px;font-weight:700;color:#0B1A2E">'+labelT1+'</div>'+
+        '<div style="font-size:8px;color:#666;text-align:right">Date<br><strong style="font-size:10px;color:#0B1A2E">'+d.date+'</strong></div>'+
       '</div>'+
-      '<div style="margin-bottom:16px;padding:10px 14px;background:#EEF4FF;border-left:4px solid #1A3A6E;font-size:12px;font-family:sans-serif">'+
-        '<strong>'+T('billTo')+' :</strong> '+client+
+      /* Client box */
+      '<div style="margin-bottom:10px;padding:6px 10px;background:#E8EEF8;border-left:3px solid #1A3A6E;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+        '<strong>'+T('billTo')+' :</strong> '+clientLine+
       '</div>'+
-      '<table style="width:100%;border-collapse:collapse;border:1px solid #C9D8F0">'+
-      '<thead><tr style="background:linear-gradient(to right,#0B1A2E,#1A3A6E);color:rgba(255,255,255,.9)">'+
-      '<th style="padding:9px 10px;text-align:left;font-size:10px;letter-spacing:1.2px">D\u00c9SIGNATIONS</th>'+
-      '<th style="padding:9px 6px;text-align:center;font-size:10px;width:9%">UNIT\u00c9</th>'+
-      '<th style="padding:9px 6px;text-align:center;font-size:10px;width:10%">QT\u00c9</th>'+
-      '<th style="padding:9px 6px;text-align:right;font-size:10px;width:13%">P.U HT</th>'+
-      '<th style="padding:9px 6px;text-align:right;font-size:10px;width:13%">P.T HT</th>'+
+      /* Table */
+      '<table style="width:100%;border-collapse:collapse;table-layout:fixed">'+
+      '<colgroup><col style="width:44%"><col style="width:9%"><col style="width:10%"><col style="width:16%"><col style="width:21%"></colgroup>'+
+      '<thead><tr style="background:linear-gradient(to right,#0B1A2E,#1A3A6E)">'+
+        '<th style="padding:6px 7px;text-align:left;font-size:8px;letter-spacing:.8px;color:rgba(255,255,255,.9)">D\u00c9SIGNATION</th>'+
+        '<th style="padding:6px 4px;text-align:center;font-size:8px;color:rgba(255,255,255,.9)">UNIT\u00c9</th>'+
+        '<th style="padding:6px 4px;text-align:center;font-size:8px;color:rgba(255,255,255,.9)">QT\u00c9</th>'+
+        '<th style="padding:6px 4px;text-align:right;font-size:8px;color:rgba(255,255,255,.9)">P.U HT</th>'+
+        '<th style="padding:6px 4px;text-align:right;font-size:8px;color:rgba(255,255,255,.9)">P.T HT</th>'+
       '</tr></thead><tbody>'+r1+'</tbody>'+
-      '<tr><td colspan="3" style="border-top:2px solid #1A3A6E"></td>'+
-      '<td style="padding:8px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #1A3A6E;font-family:sans-serif">TOTAL HT</td>'+
-      '<td style="padding:8px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #1A3A6E;font-family:sans-serif">'+totalHT+' MAD</td></tr>'+
-      '<tr><td colspan="3"></td><td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;font-family:sans-serif">TVA ('+tva+'%)</td>'+
-      '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;font-family:sans-serif">'+taFmt+' MAD</td></tr>'+
-      '<tr style="background:#EEF4FF"><td colspan="3"></td>'+
-      '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E;font-family:sans-serif">TOTAL TTC</td>'+
-      '<td style="padding:11px 6px;text-align:right;font-weight:800;font-size:14px;border-top:2px solid #0B1A2E;color:#0B1A2E;font-family:sans-serif">'+totalTTC+' MAD</td></tr>'+
+      '<tr><td colspan="3"></td>'+
+        '<td style="padding:5px 4px;text-align:right;font-size:8px;color:#555;border-top:1px solid #D0D8EA">TOTAL HT</td>'+
+        '<td style="padding:5px 4px;text-align:right;font-size:9px;font-weight:700;border-top:1px solid #D0D8EA;color:#0B1A2E">'+totalHT+' MAD</td></tr>'+
+      '<tr><td colspan="3"></td>'+
+        '<td style="padding:3px 4px;text-align:right;font-size:8px;color:#888">TVA '+tva+'%</td>'+
+        '<td style="padding:3px 4px;text-align:right;font-size:8px;color:#888">'+taFmt+' MAD</td></tr>'+
+      '<tr style="background:#E8EEF8"><td colspan="3"></td>'+
+        '<td style="padding:7px 4px;text-align:right;font-size:9px;font-weight:800;border-top:2px solid #0B1A2E;color:#0B1A2E">TOTAL TTC</td>'+
+        '<td style="padding:7px 4px;text-align:right;font-size:10px;font-weight:900;border-top:2px solid #0B1A2E;color:#0B1A2E">'+totalTTC+' MAD</td></tr>'+
       '</table>'+noteHtml+
-      '<div style="margin-top:16px;font-size:11px;color:#333;border-top:1px solid #ddd;padding-top:12px;font-family:sans-serif">'+
+      '<div style="margin-top:10px;font-size:8px;color:#444;border-top:1px solid #D0D8EA;padding-top:8px">'+
         '<strong>'+arrete+'</strong><br>'+
-        '<em style="color:#1A3A6E;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+        '<em style="color:#1A3A6E;font-size:9px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
       '</div>'+footerHtml+'</div>';
   }
 
-  /* ── THEME 2 : Vert Prestige ── */
+  /* ════════════════════════════════════════════════════
+     THEME 2 — SADK BROTHERS
+     Fond: blanc pur avec bande header gris anthracite
+     N° gras sans style spécial, table ombres latérales
+     ════════════════════════════════════════════════════ */
   if(th===2){
     var r2=d.items.map(function(it,i){
       var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
-      var nm=pr?pr.name+(pr.desc?'<br><small style="color:#888;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'\u2013');
-      return '<tr style="background:'+(i%2===0?'#F4FBF4':'#fff')+'">'+
-        '<td style="padding:10px 10px;font-size:12px;border-bottom:1px solid #C8E6C9">'+nm+'</td>'+
-        '<td style="padding:10px 6px;text-align:center;font-size:12px;border-bottom:1px solid #C8E6C9">'+(it.unite||'U')+'</td>'+
-        '<td style="padding:10px 6px;text-align:center;font-size:12px;border-bottom:1px solid #C8E6C9">'+Number(it.qty).toFixed(2)+'</td>'+
-        '<td style="padding:10px 6px;text-align:right;font-size:12px;border-bottom:1px solid #C8E6C9">'+Number(it.pu).toFixed(2)+'</td>'+
-        '<td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;border-bottom:1px solid #C8E6C9;color:#1A5C35">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+      var nm=pr
+        ? '<span style="font-size:9px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+pr.name+'</span>'
+          +(pr.desc?'<span style="font-size:8px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+pr.desc+'</span>':'')
+        : '<span style="font-size:9px">'+(it.prodId||'\u2013')+'</span>';
+      var bg = i%2===0 ? '#FFFFFF' : '#F5F6F8';
+      return '<tr style="background:'+bg+'">'+
+        '<td style="padding:5px 7px;border-bottom:1px solid #E0E0E0;max-width:0;overflow:hidden">'+nm+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E0E0E0;text-align:center;font-size:9px;white-space:nowrap">'+(it.unite||'U')+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E0E0E0;text-align:center;font-size:9px;white-space:nowrap">'+Number(it.qty).toFixed(2)+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E0E0E0;text-align:right;font-size:9px;white-space:nowrap">'+Number(it.pu).toFixed(2)+'</td>'+
+        '<td style="padding:5px 4px;border-bottom:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;white-space:nowrap;color:#1A3A5C">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
       '</tr>';
     }).join('');
-    return '<div style="background:#fff;padding:0;font-family:\'Helvetica Neue\',Arial,sans-serif;color:#1A2A1A;max-width:720px;margin:0 auto">'+
-      '<div style="background:linear-gradient(135deg,#1A5C35,#0D3D22);padding:22px 28px;color:#E8F5E9">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center">'+
-          '<div>'+
-            (c.logo?'<img src="'+c.logo+'" style="max-height:60px;max-width:180px;object-fit:contain;display:block;margin-bottom:8px">':
-              (c.name?'<div style="font-size:20px;font-weight:800;letter-spacing:2px;color:#fff">'+c.name+'</div>':''))+
-            (c.slogan?'<div style="font-size:9px;opacity:.7;margin-top:2px;letter-spacing:1px">'+c.slogan+'</div>':'')+
-          '</div>'+
-          '<div style="text-align:right">'+
-            '<div style="font-size:16px;font-weight:800;letter-spacing:1px;color:#81C784">'+label+'</div>'+
-            '<div style="font-size:11px;opacity:.75;margin-top:4px">'+d.date+'</div>'+
-          '</div>'+
-        '</div>'+
-      '</div>'+
-      '<div style="padding:20px 28px">'+
-      '<div style="margin-bottom:16px;padding:10px 14px;background:#E8F5E9;border-radius:6px;border-left:4px solid #4CAF50;font-size:12px">'+
-        '<strong>'+T('billTo')+' :</strong> '+client+
-      '</div>'+
-      '<table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:2px solid #4CAF50">'+
-      '<thead><tr style="background:#1A5C35;color:#E8F5E9">'+
-      '<th style="padding:10px 10px;text-align:left;font-size:11px;letter-spacing:.8px">DÉSIGNATION</th>'+
-      '<th style="padding:10px 6px;text-align:center;font-size:11px;width:9%">UNITÉ</th>'+
-      '<th style="padding:10px 6px;text-align:center;font-size:11px;width:10%">QTÉ</th>'+
-      '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%">P.U HT</th>'+
-      '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%">TOTAL HT</th>'+
-      '</tr></thead><tbody>'+r2+'</tbody>'+
-      '<tr style="background:#E8F5E9"><td colspan="3"></td>'+
-      '<td style="padding:8px 6px;text-align:right;font-weight:600;font-size:12px;border-top:2px solid #4CAF50">Sous-total HT</td>'+
-      '<td style="padding:8px 6px;text-align:right;font-weight:700;font-size:12px;border-top:2px solid #4CAF50">'+totalHT+' MAD</td></tr>'+
-      '<tr><td colspan="3"></td><td style="padding:5px 6px;text-align:right;font-size:11px;color:#666">TVA '+tva+'%</td>'+
-      '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#666">'+taFmt+' MAD</td></tr>'+
-      '<tr style="background:#1A5C35;color:#fff"><td colspan="3"></td>'+
-      '<td style="padding:12px 6px;text-align:right;font-weight:800;font-size:14px;letter-spacing:.5px">TOTAL TTC</td>'+
-      '<td style="padding:12px 6px;text-align:right;font-weight:900;font-size:15px;color:#81C784">'+totalTTC+' MAD</td></tr>'+
-      '</table>'+noteHtml+
-      '<div style="margin-top:14px;font-size:11px;color:#333;border-top:2px dashed #4CAF50;padding-top:10px">'+
-        '<strong>'+arrete+'</strong><br>'+
-        '<em style="color:#1A5C35;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
-      '</div>'+footerHtml+'</div></div>';
-  }
 
-  /* ── THEME 3 : Bronze Élite ── */
-  var r3=d.items.map(function(it,i){
-    var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
-    var nm=pr?pr.name+(pr.desc?'<br><small style="color:#999;font-size:10px">'+pr.desc+'</small>':''):(it.prodId||'\u2013');
-    var bg=i%2===0?'#FFFCF5':'#FFF8EE';
-    return '<tr>'+
-      '<td style="padding:10px 10px;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+nm+'</td>'+
-      '<td style="padding:10px 6px;text-align:center;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+(it.unite||'U')+'</td>'+
-      '<td style="padding:10px 6px;text-align:center;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+Number(it.qty).toFixed(2)+'</td>'+
-      '<td style="padding:10px 6px;text-align:right;font-size:12px;border:1px solid #E0D0B0;background:'+bg+'">'+Number(it.pu).toFixed(2)+'</td>'+
-      '<td style="padding:10px 6px;text-align:right;font-size:12px;font-weight:700;border:1px solid #E0D0B0;background:'+bg+';color:#7B3A00">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
-    '</tr>';
-  }).join('');
-  return '<div style="background:#FFFCF5;padding:0;font-family:\'Palatino Linotype\',Palatino,Georgia,serif;color:#2A1500;max-width:720px;margin:0 auto;border:1px solid #E0D0B0">'+
-    '<div style="background:linear-gradient(135deg,#5C2000,#8B4000,#6B2800);padding:22px 28px;color:#FFE8C0">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+    return '<div style="background:#FFFFFF;font-family:\'Helvetica Neue\',Arial,sans-serif;color:#1A1A2A;max-width:720px;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,.1)">'+
+      /* Dark header band */
+      '<div style="background:linear-gradient(135deg,#1A2A3A,#2A3A5A);padding:16px 22px;display:flex;justify-content:space-between;align-items:center">'+
         '<div>'+
-          (c.logo?'<img src="'+c.logo+'" style="max-height:60px;max-width:180px;object-fit:contain;display:block;margin-bottom:6px">':
-            (c.name?'<div style="font-size:20px;font-weight:800;letter-spacing:3px;color:#FFE8C0">'+c.name+'</div>':''))+
-          (c.slogan?'<div style="font-size:9px;letter-spacing:2px;opacity:.65;margin-top:3px">'+c.slogan+'</div>':'')+
+          (c.logo
+            ? '<img src="'+c.logo+'" style="max-height:44px;max-width:140px;object-fit:contain;display:block">'
+            : '<div style="font-size:16px;font-weight:900;letter-spacing:2px;color:#fff">'+(c.name||'')+'</div>')+
+          (c.slogan?'<div style="font-size:7px;color:rgba(255,255,255,.55);margin-top:3px;letter-spacing:1px">'+c.slogan+'</div>':'')+
         '</div>'+
         '<div style="text-align:right">'+
-          '<div style="font-size:16px;font-weight:800;letter-spacing:1.5px;color:#FF9D40">'+label+'</div>'+
-          '<div style="font-size:11px;opacity:.75;margin-top:5px;font-family:sans-serif">'+d.date+'</div>'+
+          '<div style="font-size:12px;font-weight:900;color:#7EC8E3;letter-spacing:.5px">'+labelT2+'</div>'+
+          '<div style="font-size:8px;color:rgba(255,255,255,.6);margin-top:4px">'+d.date+'</div>'+
         '</div>'+
       '</div>'+
+      /* Body */
+      '<div style="padding:18px 22px;background:linear-gradient(180deg,#FAFAFA 0%,#F0F0F2 100%)">'+
+        '<div style="margin-bottom:10px;padding:6px 10px;background:#fff;border:1px solid #D8DCE6;border-radius:3px;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+          '<strong>'+T('billTo')+' :</strong> '+clientLine+
+        '</div>'+
+        '<table style="width:100%;border-collapse:collapse;table-layout:fixed;box-shadow:0 1px 4px rgba(0,0,0,.08)">'+
+        '<colgroup><col style="width:44%"><col style="width:9%"><col style="width:10%"><col style="width:16%"><col style="width:21%"></colgroup>'+
+        '<thead><tr style="background:#1A2A3A">'+
+          '<th style="padding:6px 7px;text-align:left;font-size:8px;letter-spacing:.8px;color:rgba(255,255,255,.85)">D\u00c9SIGNATION</th>'+
+          '<th style="padding:6px 4px;text-align:center;font-size:8px;color:rgba(255,255,255,.85)">UNIT\u00c9</th>'+
+          '<th style="padding:6px 4px;text-align:center;font-size:8px;color:rgba(255,255,255,.85)">QT\u00c9</th>'+
+          '<th style="padding:6px 4px;text-align:right;font-size:8px;color:rgba(255,255,255,.85)">P.U HT</th>'+
+          '<th style="padding:6px 4px;text-align:right;font-size:8px;color:rgba(255,255,255,.85)">P.T HT</th>'+
+        '</tr></thead><tbody>'+r2+'</tbody>'+
+        '<tr style="background:#F0F2F8"><td colspan="3"></td>'+
+          '<td style="padding:5px 4px;text-align:right;font-size:8px;color:#555;border-top:1px solid #CDD2DE">TOTAL HT</td>'+
+          '<td style="padding:5px 4px;text-align:right;font-size:9px;font-weight:700;border-top:1px solid #CDD2DE;color:#1A2A3A">'+totalHT+' MAD</td></tr>'+
+        '<tr><td colspan="3"></td>'+
+          '<td style="padding:3px 4px;text-align:right;font-size:8px;color:#888">TVA '+tva+'%</td>'+
+          '<td style="padding:3px 4px;text-align:right;font-size:8px;color:#888">'+taFmt+' MAD</td></tr>'+
+        '<tr style="background:#1A2A3A"><td colspan="3"></td>'+
+          '<td style="padding:7px 4px;text-align:right;font-size:9px;font-weight:800;color:rgba(255,255,255,.85)">TOTAL TTC</td>'+
+          '<td style="padding:7px 4px;text-align:right;font-size:10px;font-weight:900;color:#7EC8E3">'+totalTTC+' MAD</td></tr>'+
+        '</table>'+noteHtml+
+        '<div style="margin-top:10px;font-size:8px;color:#444;border-top:1px solid #CDD2DE;padding-top:8px">'+
+          '<strong>'+arrete+'</strong><br>'+
+          '<em style="color:#1A3A5C;font-size:9px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+        '</div>'+footerHtml+
+      '</div></div>';
+  }
+
+  /* ════════════════════════════════════════════════════
+     THEME 3 — SOSADIT
+     Fond: gris perle dégradé fin
+     N° italique avec #, table encadrée élégante
+     ════════════════════════════════════════════════════ */
+  var r3=d.items.map(function(it,i){
+    var pr=produits.find(function(p){return String(p.id)===String(it.prodId);});
+    var nm=pr
+      ? '<span style="font-size:9px;font-weight:700;font-style:italic;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+pr.name+'</span>'
+        +(pr.desc?'<span style="font-size:8px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+pr.desc+'</span>':'')
+      : '<span style="font-size:9px;font-style:italic">'+(it.prodId||'\u2013')+'</span>';
+    var bg = i%2===0 ? '#FAFAFA' : '#F2F2F4';
+    return '<tr style="background:'+bg+'">'+
+      '<td style="padding:5px 7px;border:1px solid #DCDCDC;max-width:0;overflow:hidden">'+nm+'</td>'+
+      '<td style="padding:5px 4px;border:1px solid #DCDCDC;text-align:center;font-size:9px;white-space:nowrap">'+(it.unite||'U')+'</td>'+
+      '<td style="padding:5px 4px;border:1px solid #DCDCDC;text-align:center;font-size:9px;white-space:nowrap">'+Number(it.qty).toFixed(2)+'</td>'+
+      '<td style="padding:5px 4px;border:1px solid #DCDCDC;text-align:right;font-size:9px;white-space:nowrap">'+Number(it.pu).toFixed(2)+'</td>'+
+      '<td style="padding:5px 4px;border:1px solid #DCDCDC;text-align:right;font-size:9px;font-weight:700;white-space:nowrap;color:#2A2A2A">'+Number(it.qty*it.pu).toFixed(2)+'</td>'+
+    '</tr>';
+  }).join('');
+
+  return '<div style="background:linear-gradient(170deg,#F8F8F8 0%,#EBEBED 100%);padding:0;font-family:\'Palatino Linotype\',Palatino,Georgia,serif;color:#1A1A1A;max-width:720px;margin:0 auto;border:1px solid #D0D0D0">'+
+    /* Top band: logo left, doc number right */
+    '<div style="background:linear-gradient(135deg,#2A2A2A,#444444);padding:16px 22px;display:flex;justify-content:space-between;align-items:center">'+
+      '<div>'+
+        (c.logo
+          ? '<img src="'+c.logo+'" style="max-height:44px;max-width:150px;object-fit:contain;display:block">'
+          : '<div style="font-size:16px;font-weight:700;letter-spacing:2px;font-style:italic;color:#fff">'+(c.name||'')+'</div>')+
+        (c.slogan?'<div style="font-size:7px;color:rgba(255,255,255,.45);margin-top:3px;font-style:italic;letter-spacing:1px">'+c.slogan+'</div>':'')+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div style="font-size:13px;font-weight:700;font-style:italic;color:#E0E0E0">'+labelT3+'</div>'+
+        '<div style="font-size:8px;color:rgba(255,255,255,.5);margin-top:4px">'+d.date+'</div>'+
+      '</div>'+
     '</div>'+
-    '<div style="padding:22px 28px">'+
-    '<div style="margin-bottom:18px;padding:10px 14px;background:#FFF3E0;border:1px solid #D4A060;border-radius:4px;font-size:12px;font-family:sans-serif">'+
-      '<strong>'+T('billTo')+' :</strong> '+client+
-    '</div>'+
-    '<table style="width:100%;border-collapse:collapse;border:2px solid #C88040">'+
-    '<thead><tr style="background:linear-gradient(to right,#7B3A00,#5C2000);color:#FFE8C0">'+
-    '<th style="padding:10px 10px;text-align:left;font-size:11px;letter-spacing:.8px;border:1px solid #A05000">DÉSIGNATIONS</th>'+
-    '<th style="padding:10px 6px;text-align:center;font-size:11px;width:9%;border:1px solid #A05000">UNITÉ</th>'+
-    '<th style="padding:10px 6px;text-align:center;font-size:11px;width:10%;border:1px solid #A05000">QTÉ</th>'+
-    '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%;border:1px solid #A05000">P.U HT</th>'+
-    '<th style="padding:10px 6px;text-align:right;font-size:11px;width:13%;border:1px solid #A05000">P.T HT</th>'+
-    '</tr></thead><tbody>'+r3+'</tbody>'+
-    '<tr style="background:#FFF3E0"><td colspan="3" style="border:1px solid #E0D0B0"></td>'+
-    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border:1px solid #E0D0B0;font-family:sans-serif">TOTAL HT</td>'+
-    '<td style="padding:9px 6px;text-align:right;font-weight:700;font-size:12px;border:1px solid #E0D0B0;font-family:sans-serif">'+totalHT+' MAD</td></tr>'+
-    '<tr><td colspan="3" style="border:1px solid #E0D0B0"></td>'+
-    '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;border:1px solid #E0D0B0;font-family:sans-serif">TVA '+tva+'%</td>'+
-    '<td style="padding:5px 6px;text-align:right;font-size:11px;color:#777;border:1px solid #E0D0B0;font-family:sans-serif">'+taFmt+' MAD</td></tr>'+
-    '<tr style="background:linear-gradient(to right,#7B3A00,#5C2000);color:#FFE8C0">'+
-    '<td colspan="3" style="border:1px solid #A05000"></td>'+
-    '<td style="padding:12px 6px;text-align:right;font-weight:800;font-size:14px;letter-spacing:.5px;border:1px solid #A05000;font-family:sans-serif">TOTAL TTC</td>'+
-    '<td style="padding:12px 6px;text-align:right;font-weight:900;font-size:15px;color:#FF9D40;border:1px solid #A05000;font-family:sans-serif">'+totalTTC+' MAD</td></tr>'+
-    '</table>'+noteHtml+
-    '<div style="margin-top:14px;font-size:11px;color:#5C3000;border-top:2px solid #D4A060;padding-top:10px;font-family:sans-serif">'+
-      '<strong>'+arrete+'</strong><br>'+
-      '<em style="color:#7B3A00;font-size:12px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
-    '</div>'+footerHtml.replace('color:#888','color:#8B5C20')+
+    '<div style="padding:18px 22px">'+
+      '<div style="margin-bottom:10px;padding:6px 10px;background:rgba(255,255,255,.7);border:1px solid #D0D0D0;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+        '<strong>'+T('billTo')+' :</strong> '+clientLine+
+      '</div>'+
+      '<table style="width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #C8C8C8">'+
+      '<colgroup><col style="width:44%"><col style="width:9%"><col style="width:10%"><col style="width:16%"><col style="width:21%"></colgroup>'+
+      '<thead><tr style="background:linear-gradient(to right,#2A2A2A,#505050)">'+
+        '<th style="padding:6px 7px;text-align:left;font-size:8px;letter-spacing:.8px;color:rgba(255,255,255,.85)">D\u00c9SIGNATION</th>'+
+        '<th style="padding:6px 4px;text-align:center;font-size:8px;color:rgba(255,255,255,.85)">UNIT\u00c9</th>'+
+        '<th style="padding:6px 4px;text-align:center;font-size:8px;color:rgba(255,255,255,.85)">QT\u00c9</th>'+
+        '<th style="padding:6px 4px;text-align:right;font-size:8px;color:rgba(255,255,255,.85)">P.U HT</th>'+
+        '<th style="padding:6px 4px;text-align:right;font-size:8px;color:rgba(255,255,255,.85)">P.T HT</th>'+
+      '</tr></thead><tbody>'+r3+'</tbody>'+
+      '<tr style="background:#EAEAEA"><td colspan="3" style="border:1px solid #D0D0D0"></td>'+
+        '<td style="padding:5px 4px;text-align:right;font-size:8px;color:#555;border:1px solid #D0D0D0">TOTAL HT</td>'+
+        '<td style="padding:5px 4px;text-align:right;font-size:9px;font-weight:700;border:1px solid #D0D0D0;color:#1A1A1A">'+totalHT+' MAD</td></tr>'+
+      '<tr><td colspan="3" style="border:1px solid #D0D0D0"></td>'+
+        '<td style="padding:3px 4px;text-align:right;font-size:8px;color:#888;border:1px solid #D0D0D0">TVA '+tva+'%</td>'+
+        '<td style="padding:3px 4px;text-align:right;font-size:8px;color:#888;border:1px solid #D0D0D0">'+taFmt+' MAD</td></tr>'+
+      '<tr style="background:#2A2A2A"><td colspan="3" style="border:1px solid #444"></td>'+
+        '<td style="padding:7px 4px;text-align:right;font-size:9px;font-weight:800;font-style:italic;color:rgba(255,255,255,.85);border:1px solid #444">TOTAL TTC</td>'+
+        '<td style="padding:7px 4px;text-align:right;font-size:10px;font-weight:900;color:#E0E0E0;border:1px solid #444">'+totalTTC+' MAD</td></tr>'+
+      '</table>'+noteHtml+
+      '<div style="margin-top:10px;font-size:8px;color:#444;border-top:1px solid #C8C8C8;padding-top:8px;font-style:italic">'+
+        '<strong style="font-style:normal">'+arrete+'</strong><br>'+
+        '<em style="color:#333;font-size:9px"># '+n2w(d.totalTTC).toUpperCase()+' #</em>'+
+      '</div>'+footerHtml+
     '</div></div>';
 }
 

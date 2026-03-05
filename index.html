@@ -1588,6 +1588,22 @@ input[type=checkbox].toggle:checked + .toggle-btn::after { left: 21px; }
       </div>
       <hr class="div">
       <div class="fgrid">
+        <!-- Manual doc number -->
+        <div class="fg full" style="margin-bottom:2px">
+          <label class="flabel" id="ml_docnum">Numéro du document</label>
+          <div style="display:flex;align-items:center;gap:0;margin-top:4px;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;background:var(--paper)">
+            <!-- Fixed prefix — changes per company/type -->
+            <div id="f_num_prefix"
+              style="padding:10px 12px;background:var(--border);font-family:monospace;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;border-right:1.5px solid var(--border);letter-spacing:.5px">
+              DEV-
+            </div>
+            <!-- User types only the number -->
+            <input id="f_docnum" type="text" inputmode="numeric"
+              placeholder="0001"
+              style="flex:1;border:none;background:transparent;font-family:monospace;font-size:14px;font-weight:700;letter-spacing:1px;padding:10px 12px;color:var(--ink);outline:none;min-width:0">
+          </div>
+          <div id="f_num_auto" style="font-size:9px;color:var(--text2);margin-top:4px;font-family:monospace"></div>
+        </div>
         <div class="fg">
           <label class="flabel" id="ml_stat">Statut</label>
           <select id="f_statut">
@@ -1920,6 +1936,9 @@ function openDocModal(type){
   $('f_statut').value='pending';
   $('f_date').value=new Date().toISOString().split('T')[0];
   $('f_notes').value='';
+  // Reset number field
+  var fn=$('f_docnum'); if(fn) fn.value='';
+  updateNumUI(type, activeCompany);
   $('m-doc-title').textContent=T(type==='devis'?'qaD':'qaF');
   refreshPickerCards();
   pickCompany(activeCompany);
@@ -1946,6 +1965,8 @@ function pickCompany(idx){
     el.style.background   = isActive?'rgba(201,160,48,.1)':'transparent';
     el.style.transform    = isActive?'scale(1.04)':'scale(1)';
   });
+  // Update prefix display for selected company
+  updateNumUI(docType, idx);
 }
 function editDoc(idx,type){
   var list=type==='devis'?devis:factures, d=list[idx];
@@ -1954,6 +1975,12 @@ function editDoc(idx,type){
   $('f_cname').value=d.cname; $('f_ctel').value=d.ctel||''; $('f_caddr').value=d.caddr||'';
   $('f_statut').value=d.statut; $('f_date').value=d.date; $('f_notes').value=d.notes||'';
   $('m-doc-title').textContent='✎ '+d.num;
+  // Pre-fill number field — show only the numeric part
+  var coI=(d.coIdx!==undefined)?d.coIdx:activeCompany;
+  updateNumUI(type, coI);
+  var pfx=getDocPrefix(coI,type);
+  var rawN=(d.num||'').replace(pfx,'').trim();
+  var fn=$('f_docnum'); if(fn) fn.value=rawN;
   // Hide company picker when editing (company already fixed)
   var pw=$('co-picker-wrap'); if(pw) pw.style.display='none';
   renderItems(); $('modal-doc').classList.add('open');
@@ -2025,6 +2052,37 @@ function calcTot(){
   $('tot-ht').textContent=fmt(ht); $('tot-tva').textContent=fmt(ta); $('tot-ttc').textContent=fmt(ht+ta);
   $('tl_tva').textContent=T('tva')+' ('+tva+'%)';
 }
+/* prefix patterns per theme:
+   th1 FINI PLUS    → "Devis N°: DEV-"  /  "Facture N°: FAC-"
+   th2 SADK BROTHERS→ "DEVIS N° "        /  "FACTURE N° "
+   th3 SOSADIT      → "Dev#"             /  "Fac#"
+*/
+function getDocPrefix(coIdx, type){
+  var th = companies[coIdx].theme || 1;
+  var isDv = (type==='devis');
+  if(th===1) return isDv ? 'Devis N°: DEV-' : 'Facture N°: FAC-';
+  if(th===2) return isDv ? 'DEVIS N° '      : 'FACTURE N° ';
+  return           isDv ? 'Dev#'               : 'Fac#';
+}
+
+function updateNumUI(type, coIdx){
+  if(coIdx===undefined) coIdx=activeCompany;
+  var co=companies[coIdx];
+  var prefix = getDocPrefix(coIdx, type||docType);
+  var pfxEl=$('f_num_prefix'); if(pfxEl) pfxEl.textContent=prefix;
+  // auto preview
+  var n = (type||docType)==='devis' ? co.dvN : co.fcN;
+  var pad = co.theme===2
+    ? ('00000'+n).slice(-5)
+    : ('0000'+n).slice(-4);
+  var el=$('f_num_auto');
+  if(el) el.textContent='→ Auto: '+prefix+pad+' (laisser vide pour auto)';
+}
+
+function initManualNumToggle(){
+  // nothing needed — field is always visible now
+}
+
 function saveDoc(){
   var tva=cfg.tva, ht=docItems.reduce(function(s,it){ return s+it.qty*it.pu; },0);
   var doc={
@@ -2037,10 +2095,23 @@ function saveDoc(){
   var co=companies[activeCompany];
   var list=docType==='devis'?co.devis:co.factures;
   devis=co.devis; factures=co.factures;
-  if(editDocIdx!==null){ doc.num=list[editDocIdx].num; list[editDocIdx]=doc; }
-  else{
-    var n=docType==='devis'?co.dvN++:co.fcN++;
-    doc.num=(docType==='devis'?'DEV':'FAC')+'-'+String(n).padStart(4,'0');
+  var typedDigits=(($('f_docnum')||{value:''}).value||'').trim();
+  var prefix=getDocPrefix(activeCompany, docType);
+  var th2=(companies[activeCompany].theme===2);
+  function buildNum(n){
+    var pad = th2 ? ('00000'+n).slice(-5) : ('0000'+n).slice(-4);
+    return prefix+pad;
+  }
+  if(editDocIdx!==null){
+    doc.num = typedDigits ? prefix+typedDigits : list[editDocIdx].num;
+    list[editDocIdx]=doc;
+  } else {
+    if(typedDigits){
+      doc.num = prefix+typedDigits;
+    } else {
+      var n=docType==='devis'?co.dvN++:co.fcN++;
+      doc.num=buildNum(n);
+    }
     list.push(doc);
   }
   saveAllData();
@@ -2236,23 +2307,13 @@ function buildDocHTML(c, d, type, rows, tva, ta, logoHtml, footerHtml){
      T2 SADK BROTHERS: "DEVIS N° 00023"       — texte normal gras
      T3 SOSADIT      : "Dev#0023"             — texte italique
   ── */
-  var rawNum = d.num || '0001';
-  // strip any old year suffix e.g. DEV-0001-2024 → 0001
-  var digits = rawNum.replace(/[^0-9]/g,'').replace(/^0+/,'') || '0';
-  var pad4   = ('0000'+digits).slice(-4);
-  var pad5   = ('00000'+digits).slice(-5);
+  /* num already fully formatted by saveDoc — use as-is */
   var isDevis = (type==='devis');
-
-  var labelT1, labelT2, labelT3;
-  if(isDevis){
-    labelT1 = '<span style="text-decoration:underline;letter-spacing:1px">Devis N\u00b0: DEV-'+pad4+'</span>';
-    labelT2 = 'DEVIS N\u00b0 '+pad5;
-    labelT3 = '<em>Dev#'+pad4+'</em>';
-  } else {
-    labelT1 = '<span style="text-decoration:underline;letter-spacing:1px">Facture N\u00b0: FAC-'+pad4+'</span>';
-    labelT2 = 'FACTURE N\u00b0 '+pad5;
-    labelT3 = '<em>Fac#'+pad4+'</em>';
-  }
+  var numStr  = d.num || (isDevis ? 'Devis N°: DEV-0001' : 'Facture N°: FAC-0001');
+  /* T1: underlined | T2: plain bold | T3: italic */
+  var labelT1 = '<span style="text-decoration:underline;letter-spacing:1px">'+numStr+'</span>';
+  var labelT2 = numStr;
+  var labelT3 = '<em>'+numStr+'</em>';
 
   var totalHT  = Number(d.totalHT).toFixed(2);
   var totalTTC = Number(d.totalTTC).toFixed(2);
@@ -2358,17 +2419,15 @@ function buildDocHTML(c, d, type, rows, tva, ta, logoHtml, footerHtml){
     }).join('');
 
     return '<div style="background:#FFFFFF;font-family:\'Helvetica Neue\',Arial,sans-serif;color:#1A1A2A;max-width:720px;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,.1)">'+
-      /* Dark header band */
-      '<div style="background:linear-gradient(135deg,#1A2A3A,#2A3A5A);padding:16px 22px;display:flex;justify-content:space-between;align-items:center">'+
-        '<div>'+
-          (c.logo
-            ? '<img src="'+c.logo+'" style="max-height:44px;max-width:140px;object-fit:contain;display:block">'
-            : '<div style="font-size:16px;font-weight:900;letter-spacing:2px;color:#fff">'+(c.name||'')+'</div>')+
-          (c.slogan?'<div style="font-size:7px;color:rgba(255,255,255,.55);margin-top:3px;letter-spacing:1px">'+c.slogan+'</div>':'')+
-        '</div>'+
-        '<div style="text-align:right">'+
-          '<div style="font-size:12px;font-weight:900;color:#7EC8E3;letter-spacing:.5px">'+labelT2+'</div>'+
-          '<div style="font-size:8px;color:rgba(255,255,255,.6);margin-top:4px">'+d.date+'</div>'+
+      /* Header: light bg so dark-blue logo pops, logo centered */
+      '<div style="background:linear-gradient(160deg,#EEF3FA 0%,#FFFFFF 55%,#E8EFF8 100%);padding:20px 22px 14px;border-bottom:2px solid #C8D6EE;text-align:center">'+
+        (c.logo
+          ? '<img src="'+c.logo+'" style="max-height:72px;max-width:250px;object-fit:contain;display:inline-block">'
+          : '<div style="font-size:20px;font-weight:900;letter-spacing:2px;color:#1A2A3A">'+(c.name||'')+'</div>')+
+        (c.slogan?'<div style="font-size:7px;color:#8090A8;margin-top:4px;letter-spacing:1.5px">'+c.slogan+'</div>':'')+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;padding-top:9px;border-top:1px solid #C8D6EE">'+
+          '<div style="font-size:11px;font-weight:900;color:#1A2A3A;letter-spacing:.5px">'+labelT2+'</div>'+
+          '<div style="font-size:8px;color:#8090A8">'+d.date+'</div>'+
         '</div>'+
       '</div>'+
       /* Body */
@@ -2780,6 +2839,8 @@ document.addEventListener('DOMContentLoaded',function(){
   ['modal-doc','modal-prod'].forEach(function(id){
     $(id).addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
   });
+
+  initManualNumToggle();
 
   /* SW */
   if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(){}); }

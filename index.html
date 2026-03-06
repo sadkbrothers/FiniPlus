@@ -2713,122 +2713,72 @@ function playStartupSound(){
     var AC = window.AudioContext || window.webkitAudioContext;
     if(!AC) return;
     var ctx = new AC();
-    var now = ctx.currentTime;
 
-    /* ── Hall reverb (long, smooth) ── */
-    var revLen = Math.floor(ctx.sampleRate * 2.6);
-    var revBuf = ctx.createBuffer(2, revLen, ctx.sampleRate);
-    for(var ch=0; ch<2; ch++){
-      var rd = revBuf.getChannelData(ch);
-      for(var i=0; i<revLen; i++){
-        // Exponential decay + slight diffusion
-        rd[i] = (Math.random()*2-1) * Math.exp(-3.5 * i/revLen);
-      }
+    /* Resume context immediately — mandatory on mobile */
+    var go = function(){
+      var now = ctx.currentTime;
+
+      /* Master volume */
+      var master = ctx.createGain();
+      master.gain.setValueAtTime(0.0, now);
+      master.gain.linearRampToValueAtTime(0.35, now + 0.08);
+      master.connect(ctx.destination);
+
+      /* Simple reverb */
+      var revLen = ctx.sampleRate * 2;
+      var revBuf = ctx.createBuffer(1, revLen, ctx.sampleRate);
+      var rd = revBuf.getChannelData(0);
+      for(var i=0; i<revLen; i++) rd[i] = (Math.random()*2-1) * Math.exp(-4*i/revLen);
+      var rev = ctx.createConvolver();
+      rev.buffer = revBuf;
+      var revG = ctx.createGain();
+      revG.gain.setValueAtTime(0.20, now);
+      rev.connect(revG); revG.connect(ctx.destination);
+
+      /* Notes: C4 E4 G4 B4 E5 */
+      var notes = [
+        {f:261.63, t:0.00, d:0.60},
+        {f:329.63, t:0.22, d:0.60},
+        {f:392.00, t:0.44, d:0.65},
+        {f:493.88, t:0.66, d:0.75},
+        {f:659.25, t:0.90, d:1.80}
+      ];
+
+      notes.forEach(function(n){
+        var t0 = now + n.t;
+
+        /* Sine — body */
+        var o1 = ctx.createOscillator();
+        o1.type = 'sine';
+        o1.frequency.value = n.f;
+        var g1 = ctx.createGain();
+        g1.gain.setValueAtTime(0, t0);
+        g1.gain.linearRampToValueAtTime(0.28, t0 + 0.03);
+        g1.gain.setValueAtTime(0.28, t0 + n.d - 0.2);
+        g1.gain.exponentialRampToValueAtTime(0.001, t0 + n.d + 0.4);
+        o1.connect(g1); g1.connect(master); g1.connect(rev);
+        o1.start(t0); o1.stop(t0 + n.d + 0.5);
+
+        /* Triangle — warmth */
+        var o2 = ctx.createOscillator();
+        o2.type = 'triangle';
+        o2.frequency.value = n.f * 2;
+        var g2 = ctx.createGain();
+        g2.gain.setValueAtTime(0, t0);
+        g2.gain.linearRampToValueAtTime(0.07, t0 + 0.04);
+        g2.gain.exponentialRampToValueAtTime(0.001, t0 + n.d + 0.2);
+        o2.connect(g2); g2.connect(master);
+        o2.start(t0); o2.stop(t0 + n.d + 0.3);
+      });
+
+      setTimeout(function(){ try{ ctx.close(); }catch(e){} }, 4000);
+    };
+
+    if(ctx.state === 'suspended'){
+      ctx.resume().then(go).catch(function(){});
+    } else {
+      go();
     }
-    var rev = ctx.createConvolver();
-    rev.buffer = revBuf;
-    var revGain = ctx.createGain();
-    revGain.gain.setValueAtTime(0.22, now);
-    rev.connect(revGain);
-    revGain.connect(ctx.destination);
-
-    /* ── Master output with gentle fade-in ── */
-    var master = ctx.createGain();
-    master.gain.setValueAtTime(0.0, now);
-    master.gain.linearRampToValueAtTime(0.30, now + 0.12);
-    master.connect(ctx.destination);
-    master.connect(rev);
-
-    /* ── Low pad chord: C3+G3 held under everything ── */
-    [130.81, 196.00].forEach(function(f){
-      var osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(f, now);
-      var g = ctx.createGain();
-      g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(0.055, now + 0.25);
-      g.gain.setValueAtTime(0.055, now + 2.6);
-      g.gain.exponentialRampToValueAtTime(0.001, now + 3.6);
-      osc.connect(g); g.connect(master);
-      osc.start(now); osc.stop(now + 3.8);
-    });
-
-    /* ── Melody notes ── */
-    // C4·E4·G4·B4·E5  — classic warm ascending XP-like phrase
-    var melody = [
-      { f: 261.63, t: 0.00, d: 0.55, v: 0.22 },  // C4
-      { f: 329.63, t: 0.20, d: 0.55, v: 0.24 },  // E4
-      { f: 392.00, t: 0.40, d: 0.60, v: 0.26 },  // G4
-      { f: 493.88, t: 0.62, d: 0.70, v: 0.26 },  // B4
-      { f: 659.25, t: 0.86, d: 1.60, v: 0.30 }   // E5 — final held note
-    ];
-
-    melody.forEach(function(n, idx){
-      var t0 = now + n.t;
-      var atk = 0.025, rel = 0.45;
-      var isFinal = (idx === melody.length - 1);
-
-      /* Layer 1: sine — main body */
-      var s1 = ctx.createOscillator();
-      s1.type = 'sine';
-      s1.frequency.setValueAtTime(n.f, t0);
-      // Gentle vibrato on final note only
-      if(isFinal){
-        var lfo = ctx.createOscillator();
-        lfo.type = 'sine';
-        lfo.frequency.setValueAtTime(5.2, t0 + 0.4);
-        var lfoG = ctx.createGain();
-        lfoG.gain.setValueAtTime(0, t0 + 0.3);
-        lfoG.gain.linearRampToValueAtTime(3.5, t0 + 0.7);
-        lfo.connect(lfoG);
-        lfoG.connect(s1.frequency);
-        lfo.start(t0 + 0.3); lfo.stop(t0 + n.d + 0.3);
-      }
-
-      /* Layer 2: soft sawtooth — adds warmth/body */
-      var s2 = ctx.createOscillator();
-      s2.type = 'sawtooth';
-      s2.frequency.setValueAtTime(n.f, t0);
-      // Low-pass filter to tame the sawtooth harshness
-      var lpf = ctx.createBiquadFilter();
-      lpf.type = 'lowpass';
-      lpf.frequency.setValueAtTime(n.f * 3.2, t0);
-      lpf.Q.setValueAtTime(0.7, t0);
-      s2.connect(lpf);
-
-      /* Layer 3: bell shimmer — 3× harmonic, very soft */
-      var s3 = ctx.createOscillator();
-      s3.type = 'sine';
-      s3.frequency.setValueAtTime(n.f * 3.0, t0);
-
-      /* Envelopes */
-      var g1 = ctx.createGain();
-      g1.gain.setValueAtTime(0, t0);
-      g1.gain.linearRampToValueAtTime(n.v, t0 + atk);
-      g1.gain.setValueAtTime(n.v, t0 + n.d - rel * 0.5);
-      g1.gain.exponentialRampToValueAtTime(0.001, t0 + n.d + rel);
-
-      var g2 = ctx.createGain();
-      g2.gain.setValueAtTime(0, t0);
-      g2.gain.linearRampToValueAtTime(n.v * 0.10, t0 + atk + 0.01);
-      g2.gain.exponentialRampToValueAtTime(0.001, t0 + n.d + rel * 0.5);
-
-      var g3 = ctx.createGain();
-      g3.gain.setValueAtTime(0, t0);
-      g3.gain.linearRampToValueAtTime(n.v * 0.04, t0 + atk);
-      g3.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
-
-      s1.connect(g1); g1.connect(master);
-      lpf.connect(g2); g2.connect(master);
-      s3.connect(g3); g3.connect(master);
-
-      var endT = t0 + n.d + rel + 0.1;
-      s1.start(t0); s1.stop(endT);
-      s2.start(t0); s2.stop(endT);
-      s3.start(t0); s3.stop(t0 + 0.25);
-    });
-
-    setTimeout(function(){ try{ ctx.close(); }catch(e){} }, 4500);
   } catch(e){}
 }
 document.addEventListener('DOMContentLoaded',function(){

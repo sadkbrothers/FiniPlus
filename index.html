@@ -1841,12 +1841,15 @@ function applyTr(){
 }
 
 /* ══ NAV ══ */
-function goPage(pg){
+function goPage(pg, noHistory){
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.bn-item').forEach(function(b){ b.classList.remove('active'); });
   var p=$('p-'+pg); if(p) p.classList.add('active');
   var b=document.querySelector('[data-page="'+pg+'"]'); if(b) b.classList.add('active');
+  if(!noHistory) try{history.pushState({type:'page', page:pg}, '', '#'+pg);}catch(e){}
+  currentPage = pg;
 }
+var currentPage = 'dash';
 
 /* ══ RENDER ══ */
 function renderAll(){ renderDash(); renderDevis(); renderFact(); renderProd(); }
@@ -1943,6 +1946,7 @@ function openDocModal(type){
   refreshPickerCards();
   pickCompany(activeCompany);
   renderItems(); $('modal-doc').classList.add('open');
+  try{history.pushState({type:'modal', id:'doc'}, '', '#modal-doc');}catch(e){}
 }
 
 function refreshPickerCards(){
@@ -1984,11 +1988,12 @@ function editDoc(idx,type){
   // Hide company picker when editing (company already fixed)
   var pw=$('co-picker-wrap'); if(pw) pw.style.display='none';
   renderItems(); $('modal-doc').classList.add('open');
+  try{history.pushState({type:'modal', id:'doc'}, '', '#modal-doc');}catch(e){}
 }
-function closeDocModal(){
+function closeDocModal(fromPopstate){
   $('modal-doc').classList.remove('open');
-  // Restore picker for next new doc
   var pw=$('co-picker-wrap'); if(pw) pw.style.display='block';
+  if(!fromPopstate && history.state && history.state.type==='modal') try{history.back();}catch(e){}
 }
 
 function renderItems(){
@@ -2122,12 +2127,12 @@ function saveDoc(){
 function openProdModal(){
   editProdIdx=null;
   $('p_name').value=''; $('p_desc').value=''; $('p_prix').value=''; $('p_unite').value='U';
-  $('m-prod-title').textContent=T('np'); $('modal-prod').classList.add('open');
+  $('m-prod-title').textContent=T('np'); $('modal-prod').classList.add('open'); try{history.pushState({type:'modal',id:'prod'},'','#modal-prod');}catch(e){}
 }
 function editProd(i){
   editProdIdx=i; var p=produits[i];
   $('p_name').value=p.name; $('p_desc').value=p.desc; $('p_prix').value=p.prix; $('p_unite').value=p.unite||'U';
-  $('m-prod-title').textContent='✎ '+p.name; $('modal-prod').classList.add('open');
+  $('m-prod-title').textContent='✎ '+p.name; $('modal-prod').classList.add('open'); try{history.pushState({type:'modal',id:'prod'},'','#modal-prod');}catch(e){}
 }
 function saveProd(){
   var p={ id:editProdIdx!==null?produits[editProdIdx].id:Date.now(),
@@ -2582,6 +2587,7 @@ function previewDoc(idx,type){
 
   $('preview-doc').innerHTML = buildDocHTML(docCfg, d, type, rows, tva, ta, logoHtml, footerHtml);
   $('preview-overlay').classList.add('open');
+  try{history.pushState({type:'preview'}, '', '#preview');}catch(e){}
 }
 
 /* ══ PDF ══ */
@@ -2633,6 +2639,7 @@ function generatePDFForDoc(idx,type,callback){
   // Temporarily populate preview-doc
   previewDoc(idx,type);
   $('preview-overlay').classList.remove('open');
+  if(!arguments[0] && history.state && history.state.type==='preview') try{history.back();}catch(e){}
   setTimeout(function(){ generatePDF(callback); },150);
 }
 
@@ -2830,6 +2837,44 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 })();
 
+
+/* ══ BACK BUTTON (Android/PWA navigation) ══════════════════
+   Intercepts popstate so the hardware back button:
+   - closes preview  → returns to page
+   - closes modal    → returns to page
+   - goes to dash    → from any page
+   - exits app       → only from dash (default browser behavior)
+   ════════════════════════════════════════════════════════ */
+window.addEventListener('popstate', function(e){
+  var st = e.state;
+
+  // Something is open — close it
+  if($('preview-overlay').classList.contains('open')){
+    $('preview-overlay').classList.remove('open');
+    return;
+  }
+  if($('modal-doc').classList.contains('open')){
+    closeDocModal(true);
+    return;
+  }
+  if($('modal-prod').classList.contains('open')){
+    $('modal-prod').classList.remove('open');
+    return;
+  }
+
+  // Navigate to state page, or fall back to dash
+  if(st && st.type==='page' && st.page){
+    goPage(st.page, true);
+  } else if(currentPage !== 'dash'){
+    goPage('dash', true);
+    try{history.pushState({type:'page', page:'dash'}, '', '#dash');}catch(e){}
+  }
+  // If already on dash with no state → browser exits app naturally
+});
+
+/* Push initial state so first back press doesn't immediately exit */
+try{history.replaceState({type:'page', page:'dash'}, '', '#dash');}catch(e){}
+
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded',function(){
 
@@ -2922,8 +2967,8 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 
   /* Prod modal */
-  $('close-prod').addEventListener('click',function(){ $('modal-prod').classList.remove('open'); });
-  $('cancel-prod').addEventListener('click',function(){ $('modal-prod').classList.remove('open'); });
+  $('close-prod').addEventListener('click',function(){ if(history.state&&history.state.id==='prod') try{history.back();}catch(e){} else $('modal-prod').classList.remove('open'); });
+  $('cancel-prod').addEventListener('click',function(){ if(history.state&&history.state.id==='prod') try{history.back();}catch(e){} else $('modal-prod').classList.remove('open'); });
   $('save-prod').addEventListener('click',saveProd);
 
   /* Settings */

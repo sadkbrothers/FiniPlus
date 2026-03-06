@@ -2903,25 +2903,18 @@ document.addEventListener('DOMContentLoaded',function(){
       sp.classList.add('show');
     }
   }, 4200);
-  // Click/tap to skip intro — also triggers sound (browser requires user gesture)
+  // Click/tap to skip intro
   var soundPlayed = false;
-  function playOnce(){
+  function introInteract(){
     if(!soundPlayed){ soundPlayed=true; try{ playStartupSound(); }catch(e){} }
-  }
-
-  $('intro').addEventListener('click', function(){
-    playOnce();
     hideIntro();
-  });
-
-  // Also play on btn_start in case user lands directly on splash
-  document.addEventListener('click', function onFirstClick(){
-    playOnce();
-    document.removeEventListener('click', onFirstClick);
-  }, { once: true });
+  }
+  $('intro').addEventListener('click', introInteract);
+  $('intro').addEventListener('touchend', function(e){ e.preventDefault(); introInteract(); }, {passive:false});
 
   /* COMMENCER */
   $('btn_start').addEventListener('click',function(){
+    if(!soundPlayed){ soundPlayed=true; try{ playStartupSound(); }catch(e){} }
     var sp=$('splash');
     sp.classList.add('out');
     setTimeout(function(){
